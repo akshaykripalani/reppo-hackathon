@@ -1,0 +1,94 @@
+{
+  "rfd_id": "sf_weather_may_aug_001",
+  "name": "Synthetic Weather Data for San Francisco (May to August)",
+  "description": "A synthetic dataset containing daily weather information for San Francisco from May to August, including temperature, humidity, and precipitation.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "date": {
+        "type": "string",
+        "format": "date"
+      },
+      "temperature": {
+        "type": "number",
+        "description": "Average daily temperature in degrees Fahrenheit"
+      },
+      "humidity": {
+        "type": "number",
+        "description": "Average daily humidity percentage"
+      },
+      "precipitation": {
+        "type": "number",
+        "description": "Daily precipitation in inches"
+      }
+    },
+    "required": [
+      "date",
+      "temperature",
+      "humidity",
+      "precipitation"
+    ]
+  },
+  "data": [
+    {
+      "date": "2024-10-08",
+      "temperature": 22.05,
+      "humidity": 95.32,
+      "precipitation": 93.85
+    },
+    {
+      "date": "2024-09-28",
+      "temperature": 94.44,
+      "humidity": 71.03,
+      "precipitation": 73.02
+    },
+    {
+      "date": "2025-01-10",
+      "temperature": 85.81,
+      "humidity": 74.05,
+      "precipitation": 34.83
+    },
+    {
+      "date": "2025-03-17",
+      "temperature": 33.84,
+      "humidity": 92.33,
+      "precipitation": 79.83
+    },
+    {
+      "date": "2024-08-16",
+      "temperature": 56.02,
+      "humidity": 97.41,
+      "precipitation": 4.95
+    },
+    {
+      "date": "2024-12-20",
+      "temperature": 47.16,
+      "humidity": 25.66,
+      "precipitation": 30.22
+    },
+    {
+      "date": "2024-08-25",
+      "temperature": 69.25,
+      "humidity": 87.83,
+      "precipitation": 92.99
+    },
+    {
+      "date": "2024-08-25",
+      "temperature": 69.88,
+      "humidity": 12.59,
+      "precipitation": 58.7
+    },
+    {
+      "date": "2025-02-11",
+      "temperature": 38.45,
+      "humidity": 23.61,
+      "precipitation": 43.23
+    },
+    {
+      "date": "2024-12-06",
+      "temperature": 64.71,
+      "humidity": 70.93,
+      "precipitation": 99.9
+    }
+  ]
+}
