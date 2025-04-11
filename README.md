@@ -1,5 +1,12 @@
 # Reppo Solver Node
 
+  ____                          _   _           _      
+ |  _ \ ___ _ __  _ __   ___   | \ | | ___   __| | ___ 
+ | |_) / _ \ '_ \| '_ \ / _ \  |  \| |/ _ \ / _` |/ _ \
+ |  _ <  __/ |_) | |_) | (_) | | |\  | (_) | (_| |  __/
+ |_| \_\___| .__/| .__/ \___/  |_| \_| \___/ \__,_|\___|
+           |_|   |_|                                   
+
 ![Reppo Solver Node](https://img.shields.io/badge/Version-0.1.0-blue.svg) ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 The **Reppo Solver Node** is a decentralized application designed to participate in the **Reppo.Exchange**, a blockchain-based data marketplace that facilitates the creation, validation, and exchange of high-quality datasets. The Solver Node listens for Requests for Data (RFDs), generates or sources the requested datasets, uploads them to IPFS, verifies NFT ownership for access control, and submits solutions to the Reppo Exchange smart contract.
