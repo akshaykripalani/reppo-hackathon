@@ -1,11 +1,5 @@
-# Reppo Solver Node
-
-  ____                          _   _           _      
- |  _ \ ___ _ __  _ __   ___   | \ | | ___   __| | ___ 
- | |_) / _ \ '_ \| '_ \ / _ \  |  \| |/ _ \ / _` |/ _ \
- |  _ <  __/ |_) | |_) | (_) | | |\  | (_) | (_| |  __/
- |_| \_\___| .__/| .__/ \___/  |_| \_| \___/ \__,_|\___|
-           |_|   |_|                                   
+# Reppo Solver Node 🌟
+                   
 
 ![Reppo Solver Node](https://img.shields.io/badge/Version-0.1.0-blue.svg) ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
@@ -15,7 +9,7 @@ This README provides an overview of the Reppo Solver Node, its architecture, set
 
 ---
 
-## Table of Contents
+## Table of Contents 📋
 
 - [Overview](#overview)
 - [Architecture](#architecture)
@@ -34,7 +28,7 @@ This README provides an overview of the Reppo Solver Node, its architecture, set
 
 ---
 
-## Overview
+## Overview ✨
 
 **Reppo.Exchange** is a decentralized data exchange platform that enables data buyers (Requestors) to post **Requests for Data (RFDs)** specifying their dataset requirements. Solver Nodes, like this one, respond to these RFDs by generating or sourcing the requested data, validating it, and submitting it to the platform for rewards. The platform leverages blockchain technology (Ethereum), IPFS for decentralized storage, and NFTs for access control to ensure transparency, security, and incentivization.
 
@@ -50,7 +44,7 @@ The Solver Node is designed to be modular, extensible, and easy to integrate wit
 
 ---
 
-## Architecture
+## Architecture 🏗️
 
 The Reppo Solver Node is built as a Python application with a modular architecture, separating concerns into distinct components. This design ensures maintainability, scalability, and flexibility for integrating with different data sources and blockchain networks.
 
@@ -123,7 +117,7 @@ The Solver Node follows this workflow to process an RFD:
 
 ---
 
-## Prerequisites
+## Prerequisites ✅
 
 To run the Reppo Solver Node, ensure you have the following:
 
@@ -137,7 +131,7 @@ To run the Reppo Solver Node, ensure you have the following:
 
 ---
 
-## Installation
+## Installation 💾
 
 1. **Clone the Repository**:
    ```bash
@@ -166,7 +160,7 @@ To run the Reppo Solver Node, ensure you have the following:
 
 ---
 
-## Configuration
+## Configuration ⚙️
 
 The Solver Node relies on environment variables defined in a `.env` file. Below is an example `.env` file:
 
@@ -200,11 +194,11 @@ DATANODE_URL=http://localhost:5000/api/agent/run
 
 ---
 
-## Usage
+## Usage 🖥️
 
 The Solver Node can be run in different modes depending on your needs:
 
-### Running in Test Mode
+### Running in Test Mode 🧪
 
 Test mode allows you to process a sample RFD without connecting to the blockchain or Two Ligma server.
 
@@ -241,7 +235,7 @@ Test mode allows you to process a sample RFD without connecting to the blockchai
    ```
    - Mocks blockchain and IPFS interactions, returning dummy values (e.g., `ipfs://mockCID`, `0xMockTransactionHash`).
 
-### Running in Production Mode
+### Running in Production Mode 🚀
 
 Production mode runs the Solver Node as a listener for live RFDs on the Reppo Exchange.
 
@@ -261,7 +255,7 @@ Production mode runs the Solver Node as a listener for live RFDs on the Reppo Ex
 
 ---
 
-## Example RFD
+## Example RFD 📊
 
 Below is an example RFD for synthetic weather data, which the Solver Node can process:
 
@@ -303,7 +297,7 @@ When processed, the Solver Node:
 
 ---
 
-## Dependencies
+## Dependencies 📦
 
 The Reppo Solver Node relies on the following Python packages, listed in `requirements.txt`:
 
@@ -338,7 +332,7 @@ pip install -r requirements.txt
 
 ---
 
-## Contributing
+## Contributing 🤝
 
 We welcome contributions to improve the Reppo Solver Node! To contribute:
 
@@ -370,7 +364,7 @@ Please report issues or feature requests via the GitHub issue tracker.
 
 ---
 
-## License
+## License 📜
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
