@@ -131,15 +131,45 @@ To run the Reppo Solver Node, ensure you have the following:
 - **Python**: Version 3.8 or higher.
 - **Ethereum Node Access**: A connection to an Ethereum node (e.g., Infura, Alchemy) via an RPC URL.
 - **Pinata Account**: API keys for IPFS pinning (`PINATA_API_KEY` and `PINATA_SECRET_API_KEY`).
-- **Data Provider**: At least one of the following:
-  - **HuggingFace**: API token and model name
-  - **OpenGradient**: Access to OpenGradient's API
-  - **MCP Server**: Running instance of MCP server
-  - **LocalLLM**: Path to a local LLM model
-  - **Mock**: No additional setup required (good for testing)
 - **Reppo Node NFT**: Ownership of a Reppo Node NFT in the wallet used for submission.
 - **Environment Variables**: A `.env` file with required configurations (see [Configuration](#configuration)).
 - **Dependencies**: Python packages listed in `requirements.txt` (see [Dependencies](#dependencies)).
+
+### Optional Data Providers 🔄
+
+The Solver Node is designed to be flexible in how it generates or sources datasets. You can:
+
+1. **Use Built-in Providers** (optional):
+   - **[HuggingFace](https://huggingface.co/)**: Use HuggingFace models for dataset generation
+     - Requires: API token and model name
+     - Good for: AI-powered dataset generation
+   - **[MCP Servers](https://modelcontextprotocol.io/examples)**: Connect to Model Context Protocol servers
+     - Various options including:
+       - Data and file systems (Filesystem, PostgreSQL, SQLite, Google Drive)
+       - Development tools (Git, GitHub, GitLab)
+       - Web automation (Brave Search, Fetch, Puppeteer)
+       - AI tools (EverArt, Sequential Thinking)
+     - Good for: Structured data access and AI-powered operations
+   - **OpenGradient**: Use OpenGradient's hosted models
+     - Good for: Synthetic data generation
+   - **LocalLLM**: Use a locally hosted LLM model
+     - Good for: Private or custom model usage
+   - **Mock**: Built-in mock data generation
+     - No setup required
+     - Good for: Testing and development
+
+2. **Implement Custom Logic**:
+   - Create your own data provider by extending the `DataProvider` class
+   - Integrate with proprietary data sources
+   - Implement custom business logic for dataset generation
+   - Connect to enterprise data systems
+
+3. **Use External Services**:
+   - Connect to any data service via HTTP/API
+   - Integrate with data marketplaces
+   - Use cloud-based data generation services
+
+The choice of data provider is entirely up to you and depends on your specific needs. The Solver Node's modular architecture makes it easy to integrate with any data source while maintaining the core functionality of RFD processing and blockchain interaction.
 
 ---
 
