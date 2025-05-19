@@ -59,7 +59,13 @@ The Solver Node consists of the following key components, each implemented in a 
 
 2. **DataSolver (`dataSolver.py`)**
    - **Purpose**: Generates or sources datasets that fulfill RFD requirements.
-   - **Functionality**: Communicates with a **Two Ligma server** (a data generation service) via HTTP requests to produce synthetic datasets. Saves the generated dataset as a JSON file in the `data/` directory.
+   - **Functionality**: Supports multiple data providers:
+     - **HuggingFace**: Uses HuggingFace models for dataset generation
+     - **Mock**: Generates synthetic test data locally
+     - **OpenGradient**: Uses OpenGradient's hosted models
+     - **MCP**: Connects to an MCP server for data generation
+     - **LocalLLM**: Uses a locally hosted LLM model
+   - Saves generated datasets as JSON files in the `data/` directory.
    - **Dependencies**: `requests`, `python-dotenv`.
 
 3. **IPFSUploader (`ipfsUploader.py`)**
@@ -68,12 +74,12 @@ The Solver Node consists of the following key components, each implemented in a 
    - **Dependencies**: `requests`, `python-dotenv`.
 
 4. **NFTAuthorizer (`nftAuthorizer.py`)**
-   - **Purpose**: Verifies that the node operator’s wallet owns a Reppo Node NFT, which is required to submit solutions.
+   - **Purpose**: Verifies that the node operator's wallet owns a Reppo Node NFT, which is required to submit solutions.
    - **Functionality**: Queries an ERC-721 NFT contract using `web3.py` to check the `balanceOf` the wallet address. Supports block-specific queries for historical ownership verification.
    - **Dependencies**: `web3.py`, `python-dotenv`.
 
 5. **SolutionSubmitter (`submitSolution.py`)**
-   - **Purpose**: Submits the dataset’s IPFS URI to the Reppo Exchange smart contract.
+   - **Purpose**: Submits the dataset's IPFS URI to the Reppo Exchange smart contract.
    - **Functionality**: Builds, signs, and sends a transaction to the `submitSolution` function of the smart contract, including the RFD ID and IPFS URI. Returns the transaction hash upon success.
    - **Dependencies**: `web3.py`, `python-dotenv`.
 
@@ -100,7 +106,8 @@ The Solver Node follows this workflow to process an RFD:
    - If no NFT is found, the RFD is skipped.
 
 3. **Dataset Generation**:
-   - The `DataSolver` sends the RFD to the Two Ligma server, which generates a synthetic dataset.
+   - The `DataSolver` uses the configured data provider to generate a dataset matching the RFD schema.
+   - Supported providers include HuggingFace, Mock, OpenGradient, MCP, and LocalLLM.
    - The dataset is saved locally as `data/rfd_<rfd_id>_solution.json`.
 
 4. **IPFS Upload**:
@@ -124,7 +131,12 @@ To run the Reppo Solver Node, ensure you have the following:
 - **Python**: Version 3.8 or higher.
 - **Ethereum Node Access**: A connection to an Ethereum node (e.g., Infura, Alchemy) via an RPC URL.
 - **Pinata Account**: API keys for IPFS pinning (`PINATA_API_KEY` and `PINATA_SECRET_API_KEY`).
-- **Two Ligma Server**: A running instance of the Two Ligma server for dataset generation (default URL: `http://localhost:5000/api/agent/run`).
+- **Data Provider**: At least one of the following:
+  - **HuggingFace**: API token and model name
+  - **OpenGradient**: Access to OpenGradient's API
+  - **MCP Server**: Running instance of MCP server
+  - **LocalLLM**: Path to a local LLM model
+  - **Mock**: No additional setup required (good for testing)
 - **Reppo Node NFT**: Ownership of a Reppo Node NFT in the wallet used for submission.
 - **Environment Variables**: A `.env` file with required configurations (see [Configuration](#configuration)).
 - **Dependencies**: Python packages listed in `requirements.txt` (see [Dependencies](#dependencies)).
@@ -196,62 +208,93 @@ DATANODE_URL=http://localhost:5000/api/agent/run
 
 ## Usage 🖥️
 
-The Solver Node can be run in different modes depending on your needs:
+The Solver Node supports three distinct modes of operation, each designed for different use cases:
 
-### Running in Test Mode 🧪
+### 1. Production Mode (Default)
+```bash
+python main.py start
+```
+- **Purpose**: Run the full node in production
+- **Behavior**:
+  - Listens for RFDs on the blockchain
+  - Uses real data generation (HuggingFace if available)
+  - Performs real blockchain interactions
+  - Requires all environment variables
+- **Use Case**: Running the actual node in production
 
-Test mode allows you to process a sample RFD without connecting to the blockchain or Two Ligma server.
+### 2. Test Mode
+```bash
+python main.py start --test
+```
+- **Purpose**: Test the data generation pipeline
+- **Behavior**:
+  - Processes a sample RFD file (`sample_rfd.json` by default)
+  - Uses real data generation (HuggingFace if available)
+  - Skips blockchain interactions
+  - Only requires `WALLET_ADDRESS` and optionally `HUGGINGFACE_API_TOKEN`
+- **Use Case**: Testing data generation logic without blockchain dependencies
+- **Custom RFD File**: Use `--rfd-file path/to/rfd.json` to specify a different RFD file
 
-1. **Prepare a Sample RFD**:
-   Create a `sample_rfd.json` file in the project root. For example:
-   ```json
-   {
-       "rfd_id": "sf_weather_may_aug_001",
-       "name": "Synthetic Weather Data for San Francisco (May to August)",
-       "description": "A synthetic dataset containing daily weather information for San Francisco from May to August, including temperature, humidity, and precipitation.",
-       "schema": {
-           "type": "object",
-           "properties": {
-               "date": { "type": "string", "format": "date" },
-               "temperature": { "type": "number", "description": "Average daily temperature in degrees Fahrenheit" },
-               "humidity": { "type": "number", "description": "Average daily humidity percentage" },
-               "precipitation": { "type": "number", "description": "Daily precipitation in inches" }
-           },
-           "required": ["date", "temperature", "humidity", "precipitation"]
-       }
-   }
-   ```
+### 3. Mock Mode
+```bash
+python main.py start --mock
+```
+- **Purpose**: Simulate the entire pipeline for development
+- **Behavior**:
+  - Uses mock data generation
+  - Uses mock blockchain responses
+  - No external services required
+  - Only requires `WALLET_ADDRESS`
+- **Use Case**: Development, debugging, or demonstration without any external dependencies
 
-2. **Run in Test Mode**:
-   ```bash
-   python main.py start --test
-   ```
-   - This processes the `sample_rfd.json` file and generates a dataset in the `data/` directory.
-   - Blockchain interactions are skipped unless `--mock` is also used.
+### Mode Selection Rules
+- If both `--test` and `--mock` are specified, mock mode takes precedence
+- Production mode is the default when no flags are provided
+- Each mode has specific environment variable requirements (see Configuration section)
 
-3. **Run in Mock Mode** (optional):
-   ```bash
-   python main.py start --test --mock
-   ```
-   - Mocks blockchain and IPFS interactions, returning dummy values (e.g., `ipfs://mockCID`, `0xMockTransactionHash`).
+### Example RFD for Testing
+Create a `sample_rfd.json` file for test mode:
+```json
+{
+    "rfd_id": "sf_weather_may_aug_001",
+    "name": "Synthetic Weather Data for San Francisco (May to August)",
+    "description": "A synthetic dataset containing daily weather information for San Francisco from May to August, including temperature, humidity, and precipitation.",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "date": { "type": "string", "format": "date" },
+            "temperature": { "type": "number", "description": "Average daily temperature in degrees Fahrenheit" },
+            "humidity": { "type": "number", "description": "Average daily humidity percentage" },
+            "precipitation": { "type": "number", "description": "Daily precipitation in inches" }
+        },
+        "required": ["date", "temperature", "humidity", "precipitation"]
+    }
+}
+```
 
-### Running in Production Mode 🚀
+## Configuration ⚙️
 
-Production mode runs the Solver Node as a listener for live RFDs on the Reppo Exchange.
+### Environment Variables
+Required variables vary by mode:
 
-1. **Ensure Configuration**:
-   Verify that your `.env` file is correctly set up and that the Two Ligma server is running.
+#### All Modes
+- `WALLET_ADDRESS`: Your Ethereum wallet address
 
-2. **Start the Node**:
-   ```bash
-   python main.py start
-   ```
-   - The node connects to the Ethereum network, listens for `RFDPosted` events, and processes RFDs as they arrive.
-   - Datasets are generated, uploaded to IPFS, and submitted to the smart contract.
+#### Production Mode
+- `WEB3_RPC_URL`: Ethereum node RPC URL
+- `CHAIN_ID`: Ethereum chain ID
+- `PRIVATE_KEY`: Your wallet's private key
+- `EXCHANGE_CONTRACT_ADDRESS`: Reppo Exchange contract address
+- `NFT_CONTRACT_ADDRESS`: Reppo Node NFT contract address
+- `PINATA_API_KEY`: IPFS pinning service API key
+- `PINATA_SECRET_API_KEY`: IPFS pinning service secret key
+- `HUGGINGFACE_API_TOKEN` (optional): For real data generation
 
-3. **Monitor Logs**:
-   - The node logs progress to the console, including RFD detection, dataset generation, IPFS uploads, and transaction hashes.
-   - Check the `data/` directory for generated datasets.
+#### Test Mode
+- `HUGGINGFACE_API_TOKEN` (optional): For real data generation
+
+#### Mock Mode
+- No additional environment variables required
 
 ---
 

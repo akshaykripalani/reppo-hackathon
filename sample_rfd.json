@@ -1,27 +1,16 @@
 {
-    "rfd_id": "sf_weather_may_aug_001",
-    "name": "Synthetic Weather Data for San Francisco (May to August)",
-    "description": "A synthetic dataset containing daily weather information for San Francisco from May to August, including temperature, humidity, and precipitation.",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "date": {
-          "type": "string",
-          "format": "date"
-        },
-        "temperature": {
-          "type": "number",
-          "description": "Average daily temperature in degrees Fahrenheit"
-        },
-        "humidity": {
-          "type": "number",
-          "description": "Average daily humidity percentage"
-        },
-        "precipitation": {
-          "type": "number",
-          "description": "Daily precipitation in inches"
-        }
-      },
-      "required": ["date", "temperature", "humidity", "precipitation"]
-    }
+  "rfd_id": "patient_vitals_jan_jun_001",
+  "name": "Synthetic Patient Vitals Data (Jan to Jun)",
+  "description": "A synthetic dataset simulating patient vitals recorded daily from January to June, including heart rate, blood pressure, and blood oxygen levels.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "date": { "type": "string", "format": "date" },
+      "heart_rate": { "type": "number", "description": "Daily average heart rate in BPM" },
+      "systolic_bp": { "type": "number", "description": "Daily average systolic blood pressure" },
+      "diastolic_bp": { "type": "number", "description": "Daily average diastolic blood pressure" },
+      "oxygen_saturation": { "type": "number", "description": "Blood oxygen saturation percentage" }
+    },
+    "required": ["date", "heart_rate", "systolic_bp", "diastolic_bp", "oxygen_saturation"]
   }
+}

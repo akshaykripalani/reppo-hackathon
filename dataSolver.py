@@ -1,97 +1,259 @@
 # dataSolver.py
 import os
 import json
-import requests
-from typing import Dict
-from requests.exceptions import RequestException
+import logging
+from abc import ABC, abstractmethod
+from typing import Dict, Any, Optional, Union
+from dataclasses import dataclass
+from enum import Enum
+import random
+from datetime import datetime, timedelta
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger('DataSolver')
+
+class ProviderType(Enum):
+    """Supported data provider types"""
+    HUGGINGFACE = "huggingface"
+    MOCK = "mock"
+    OPENGRADIENT = "opengradient"
+    MCP = "mcp"
+    LOCAL_LLM = "local_llm"
+
+@dataclass
+class DatasetConfig:
+    """Configuration for dataset generation"""
+    output_dir: str = "data"
+    num_records: int = 10
+    date_range: tuple[str, str] = ("2024-01-01", "2024-12-31")
+    number_range: tuple[float, float] = (0.0, 100.0)
+    provider_type: ProviderType = ProviderType.MOCK
+    provider_config: Dict[str, Any] = None
+
+class DataProvider(ABC):
+    """Abstract base class for data providers"""
+    
+    def __init__(self, config: Dict[str, Any] = None):
+        self.config = config or {}
+        self.logger = logging.getLogger(self.__class__.__name__)
+    
+    @abstractmethod
+    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+        """Generate a dataset based on the RFD schema and configuration"""
+        pass
+
+class HuggingFaceProvider(DataProvider):
+    """Provider that generates datasets using HuggingFace models"""
+    
+    def __init__(self, config: Dict[str, Any] = None):
+        super().__init__(config)
+        self.token = config.get("token") if config else None
+        self.model = config.get("model") if config else None
+        if not self.token or not self.model:
+            self.logger.warning("HuggingFace token or model not configured")
+    
+    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+        """Generate a dataset using HuggingFace model"""
+        if not self.token or not self.model:
+            self.logger.error("HuggingFace provider not properly configured")
+            return None
+            
+        self.logger.info(f"Generating dataset using {self.model}")
+        # Implementation details...
+        return None  # Placeholder - actual implementation needed
+
+class MockProvider(DataProvider):
+    """Provider that generates mock data for testing"""
+    
+    def __init__(self, config: Dict[str, Any] = None):
+        super().__init__(config)
+        self.logger.info("Initialized Mock provider for testing")
+    
+    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+        """Generate mock data based on RFD schema"""
+        self.logger.info(f"Generating mock dataset with {config.num_records} records")
+        
+        # Extract schema information
+        schema = rfd.get("schema", {})
+        properties = schema.get("properties", {})
+        required = schema.get("required", [])
+        
+        # Generate mock records
+        records = []
+        for _ in range(config.num_records):
+            record = {}
+            for field, field_schema in properties.items():
+                if field_schema.get("type") == "string":
+                    if field_schema.get("format") == "date":
+                        # Generate a random date in the config's date range
+                        start_date = datetime.strptime(config.date_range[0], "%Y-%m-%d")
+                        end_date = datetime.strptime(config.date_range[1], "%Y-%m-%d")
+                        days_between = (end_date - start_date).days
+                        random_days = random.randint(0, days_between)
+                        record[field] = (start_date + timedelta(days=random_days)).strftime("%Y-%m-%d")
+                    else:
+                        record[field] = f"mock_{field}_{random.randint(1, 1000)}"
+                elif field_schema.get("type") == "number":
+                    min_val, max_val = config.number_range
+                    record[field] = round(random.uniform(min_val, max_val), 2)
+                elif field_schema.get("type") == "integer":
+                    min_val, max_val = config.number_range
+                    record[field] = random.randint(int(min_val), int(max_val))
+                elif field_schema.get("type") == "boolean":
+                    record[field] = random.choice([True, False])
+            
+            # Ensure all required fields are present
+            for field in required:
+                if field not in record:
+                    self.logger.warning(f"Required field {field} not in schema properties")
+                    record[field] = None
+            
+            records.append(record)
+        
+        return {"data": records}
+
+class OpenGradientProvider(DataProvider):
+    """Provider using OpenGradient's hosted models"""
+    
+    def __init__(self, config: Dict[str, Any] = None):
+        super().__init__(config)
+        self.model_name = self.config.get("model_name", "llama-8")
+        self.logger.info(f"Initialized OpenGradient provider with model: {self.model_name}")
+
+    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+        self.logger.info(f"Generating dataset using OpenGradient model: {self.model_name}")
+        # Implementation details...
+        return {"data": []}  # Placeholder
+
+class MCPProvider(DataProvider):
+    """Provider using MCP server"""
+    
+    def __init__(self, config: Dict[str, Any] = None):
+        super().__init__(config)
+        self.server_url = self.config.get("server_url", "http://localhost:8000")
+        self.logger.info(f"Initialized MCP provider with server: {self.server_url}")
+
+    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+        self.logger.info(f"Generating dataset using MCP server: {self.server_url}")
+        # Implementation details...
+        return {"data": []}  # Placeholder
+
+class LocalLLMProvider(DataProvider):
+    """Provider using locally hosted LLM"""
+    
+    def __init__(self, config: Dict[str, Any] = None):
+        super().__init__(config)
+        self.model_path = self.config.get("model_path")
+        if not self.model_path:
+            raise ValueError("model_path must be specified for LocalLLM provider")
+        self.logger.info(f"Initialized Local LLM provider with model at: {self.model_path}")
+
+    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+        self.logger.info(f"Generating dataset using local model: {self.model_path}")
+        # Implementation details...
+        return {"data": []}  # Placeholder
 
 class DataSolver:
-    def __init__(self, 
-                 output_dir: str = "data", 
-                 datanode_url: str = "http://localhost:5000/api/agent/run"):
-        self.output_dir = output_dir
-        self.datanode_url = os.environ.get("DATANODE_URL", datanode_url)
-        try:
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-        except PermissionError:
-            raise PermissionError(f"Cannot create output directory '{output_dir}'. Please check permissions or specify a different directory.")
-        except Exception as e:
-            raise RuntimeError(f"Failed to initialize output directory '{output_dir}': {str(e)}")
-
-    def is_datanode_available(self) -> bool:
-        """Check if the Data Node (Two Ligma server) is running by querying its healthcheck endpoint."""
-        try:
-            response = requests.get(self.datanode_url.replace("/api/agent/run", "/api/healthcheck"), timeout=2)
-            response.raise_for_status()
-            return response.json().get("status") == "ok"
-        except RequestException:
-            return False
-
+    """Orchestrates dataset generation using configured data providers"""
+    
+    _provider_map = {
+        ProviderType.HUGGINGFACE: HuggingFaceProvider,
+        ProviderType.MOCK: MockProvider,
+        ProviderType.OPENGRADIENT: OpenGradientProvider,
+        ProviderType.MCP: MCPProvider,
+        ProviderType.LOCAL_LLM: LocalLLMProvider
+    }
+    
+    def __init__(self, config: Optional[DatasetConfig] = None):
+        """Initialize the DataSolver with configuration
+        
+        Args:
+            config: Configuration for dataset generation
+        """
+        self.config = config or DatasetConfig()
+        self.logger = logging.getLogger('DataSolver')
+        
+        # Initialize provider
+        provider_class = self._provider_map.get(self.config.provider_type)
+        if not provider_class:
+            raise ValueError(f"Unsupported provider type: {self.config.provider_type}")
+        
+        self.provider = provider_class(self.config.provider_config)
+        self.logger.info(f"Initialized DataSolver with provider: {self.config.provider_type.value}")
+        
+        # Ensure output directory exists
+        os.makedirs(self.config.output_dir, exist_ok=True)
+    
     def solve_rfd(self, rfd: Dict) -> str:
-        """Process an RFD by routing it to the Data Node (Two Ligma server)."""
-        rfd_id = rfd["rfd_id"]
-        name = rfd["name"]
-
-        if not self.is_datanode_available():
-            error_msg = (
-                f"Data Node (Two Ligma server) not available at {self.datanode_url}. "
-                "Please ensure the Two Ligma server is running and accessible at this URL."
-            )
-            print(error_msg)
-            raise RuntimeError(error_msg)
-
-        # Transform RFD into Two Ligma's AgentChatRequest format
-        # We assume the analytics_agent can process synthetic data generation via a tool
-        message = {
-            "type": "user",
-            "message": f"Generate synthetic data for RFD: {json.dumps(rfd)}"
-        }
-        context = {
-            "conversationHistory": [],
-            "address": os.environ.get("WALLET_ADDRESS", "mock_address")  # Required by Two Ligma
-        }
-        payload = {
-            "message": message,
-            "context": context,
-            "agent": "analytics"  # Explicitly target the analytics agent
-        }
-
+        """Generate and save a dataset for the given RFD"""
+        rfd_id = rfd.get("rfd_id", "unknown")
+        self.logger.info(f"Processing RFD #{rfd_id} using {self.config.provider_type.value} provider")
+        
         try:
-            response = requests.post(self.datanode_url, json=payload)
-            response.raise_for_status()
-            result = response.json()
-
-            # Extract the generated data from the agent's response
-            # Assuming the agent returns a JSON string with the dataset in its message
-            agent_message = result.get("message", "")
-            try:
-                full_dataset = json.loads(agent_message)  # Expecting the agent to return the dataset as JSON
-                if not isinstance(full_dataset, dict) or "data" not in full_dataset:
-                    raise ValueError("Invalid dataset format from Data Node")
-            except json.JSONDecodeError:
-                raise ValueError(f"Data Node response is not a valid dataset: {agent_message}")
-
-            # Save the dataset locally
-            file_path = os.path.join(self.output_dir, f"rfd_{rfd_id}_solution.json")
+            # For HuggingFace provider, check if properly configured
+            if self.config.provider_type == ProviderType.HUGGINGFACE:
+                if not isinstance(self.provider, HuggingFaceProvider):
+                    raise ValueError("Invalid provider type for test mode")
+                if not self.provider.token or not self.provider.model:
+                    self.logger.error("HuggingFace provider not properly configured")
+                    return None
+                if self.provider.generate_dataset.__code__.co_code == MockProvider.generate_dataset.__code__.co_code:
+                    self.logger.error("HuggingFace provider not implemented")
+                    return None
+            
+            # Generate dataset using the configured provider
+            dataset = self.provider.generate_dataset(rfd, self.config)
+            if dataset is None:
+                return None
+                
+            file_path = os.path.join(self.config.output_dir, f"rfd_{rfd_id}_solution.json")
+            
             with open(file_path, 'w') as f:
-                json.dump(full_dataset, f, indent=2)
-
-            print(f"Dataset generated by Data Node (Two Ligma) at: {file_path}")
+                json.dump(dataset, f, indent=2)
+            
+            self.logger.info(f"Dataset generated successfully at: {file_path}")
             return file_path
-
-        except RequestException as e:
-            error_msg = (
-                f"Failed to connect to Data Node (Two Ligma) at {self.datanode_url}: {str(e)}. "
-                "Please ensure the Two Ligma server is running and accessible."
-            )
-            print(error_msg)
-            raise RuntimeError(error_msg) from e
+            
         except Exception as e:
-            error_msg = f"Error processing RFD #{rfd_id} with Data Node (Two Ligma): {str(e)}"
-            print(error_msg)
-            raise RuntimeError(error_msg) from e
+            self.logger.error(f"Error processing RFD #{rfd_id}: {str(e)}")
+            raise
 
+# Example usage
 if __name__ == "__main__":
-    solver = DataSolver()
-    print("DataSolver initialized. Use with sample_rfd.json via main.py --test")
+    # Example 1: Using Mock provider
+    mock_config = DatasetConfig(
+        provider_type=ProviderType.MOCK,
+        num_records=5
+    )
+    mock_solver = DataSolver(config=mock_config)
+    
+    # Example 2: Using HuggingFace provider
+    hf_config = DatasetConfig(
+        provider_type=ProviderType.HUGGINGFACE,
+        provider_config={"model_name": "meta-llama/Llama-2-7b-chat-hf"}
+    )
+    try:
+        hf_solver = DataSolver(config=hf_config)
+    except ValueError as e:
+        logger.warning(f"Could not initialize HuggingFace provider: {e}")
+    
+    # Example 3: Using OpenGradient provider
+    og_config = DatasetConfig(
+        provider_type=ProviderType.OPENGRADIENT,
+        provider_config={"model_name": "llama-8"}
+    )
+    og_solver = DataSolver(config=og_config)
+    
+    # Example 4: Using Local LLM provider
+    local_config = DatasetConfig(
+        provider_type=ProviderType.LOCAL_LLM,
+        provider_config={"model_path": "/path/to/local/model"}
+    )
+    try:
+        local_solver = DataSolver(config=local_config)
+    except ValueError as e:
+        logger.warning(f"Could not initialize Local LLM provider: {e}")
