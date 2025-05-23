@@ -2,11 +2,11 @@
 import os
 from dotenv import load_dotenv
 from rfdListener import RFDListener
-from dataSolver import DataSolver, DatasetConfig, ProviderType
+from datasolver import DataSolver
 from ipfsUploader import upload_to_ipfs
 from nftAuthorizer import NFTAuthorizer
 from submitSolution import SolutionSubmitter
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Type
 import json
 import random
 import time
@@ -21,23 +21,23 @@ logging.basicConfig(
 )
 
 class SolverNode:
-    def __init__(self, test_mode: bool = False, mock_mode: bool = False):
+    def __init__(self, test_mode: bool = False, mock_mode: bool = False, mcp_tools: Optional[List[Type]] = None):
         """Initialize the solver node
         
         Args:
             test_mode: Run in test mode (uses real data generation)
             mock_mode: Run in mock mode (uses mock data and responses)
+            mcp_tools: List of MCP tool classes to use (optional, e.g. [DynamoDBTool])
         """
         self.logger = logging.getLogger('SolverNode')
         self.test_mode = test_mode
         self.mock_mode = mock_mode
-        
+        # MCP tools should be passed in by the user or config if needed
+        self.mcp_tools = mcp_tools
         # Load environment variables
         load_dotenv()
-        
         # Initialize components based on mode
         self._initialize_components()
-        
         # Print mode information
         self._print_mode_info()
     
@@ -51,62 +51,18 @@ class SolverNode:
             if not self.wallet_address:
                 raise ValueError("WALLET_ADDRESS must be set in .env file")
         
-        # Initialize data solver
-        solver_config = self._create_solver_config()
-        self.solver = DataSolver(solver_config)
+        # Initialize solver with appropriate configuration
+        self.solver = DataSolver.from_env(mock_mode=self.mock_mode)
         
         # Initialize other components based on mode
-        self.authorizer = None if (self.test_mode or self.mock_mode) else NFTAuthorizer()
-        self.submitter = None if (self.test_mode or self.mock_mode) else SolutionSubmitter()
-        self.listener = None if (self.test_mode or self.mock_mode) else RFDListener()
-    
-    def _create_solver_config(self) -> DatasetConfig:
-        """Create solver configuration based on mode"""
-        if self.mock_mode:
-            return DatasetConfig(
-                provider_type=ProviderType.MOCK,
-                num_records=100,
-                date_range=["2024-01-01", "2024-12-31"],
-                number_range=[0, 100],
-                output_dir="data"
-            )
-        
-        # Get configuration from environment variables
-        num_records = int(os.getenv("NUM_RECORDS", "100"))
-        date_range = [
-            os.getenv("DATE_RANGE_START", "2024-01-01"),
-            os.getenv("DATE_RANGE_END", "2024-12-31")
-        ]
-        number_range = [
-            int(os.getenv("NUMBER_RANGE_MIN", "0")),
-            int(os.getenv("NUMBER_RANGE_MAX", "100"))
-        ]
-        output_dir = os.getenv("OUTPUT_DIR", "data")
-        
-        if self.test_mode:
-            return DatasetConfig(
-                provider_type=ProviderType.HUGGINGFACE,
-                num_records=num_records,
-                date_range=date_range,
-                number_range=number_range,
-                output_dir=output_dir,
-                provider_config={
-                    "token": os.getenv("HUGGINGFACE_TOKEN"),
-                    "model": os.getenv("MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
-                }
-            )
-        
-        return DatasetConfig(
-            provider_type=ProviderType.HUGGINGFACE,
-            num_records=num_records,
-            date_range=date_range,
-            number_range=number_range,
-            output_dir=output_dir,
-            provider_config={
-                "token": os.getenv("HUGGINGFACE_TOKEN"),
-                "model": os.getenv("MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
-            }
-        )
+        if self.test_mode or self.mock_mode:
+            self.authorizer = None
+            self.submitter = None
+            self.listener = None
+        else:
+            self.authorizer = NFTAuthorizer()
+            self.submitter = SolutionSubmitter()
+            self.listener = RFDListener()
     
     def _print_mode_info(self):
         """Print information about the current mode"""
@@ -148,7 +104,7 @@ class SolverNode:
         
         try:
             # Generate dataset
-            dataset_path = self.solver.solve_rfd(rfd)
+            dataset_path = self.solver.solve(rfd)
             if not dataset_path:
                 self.logger.error(f"Failed to generate dataset for RFD #{rfd_id}")
                 return None

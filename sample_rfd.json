@@ -1,16 +1,48 @@
 {
-  "rfd_id": "patient_vitals_jan_jun_001",
-  "name": "Synthetic Patient Vitals Data (Jan to Jun)",
-  "description": "A synthetic dataset simulating patient vitals recorded daily from January to June, including heart rate, blood pressure, and blood oxygen levels.",
+  "rfd_id": "test_rfd_001",
+  "name": "Test RFD for Mock Data Generation",
+  "description": "A test RFD for verifying mock data generation capabilities",
   "schema": {
     "type": "object",
     "properties": {
-      "date": { "type": "string", "format": "date" },
-      "heart_rate": { "type": "number", "description": "Daily average heart rate in BPM" },
-      "systolic_bp": { "type": "number", "description": "Daily average systolic blood pressure" },
-      "diastolic_bp": { "type": "number", "description": "Daily average diastolic blood pressure" },
-      "oxygen_saturation": { "type": "number", "description": "Blood oxygen saturation percentage" }
+      "id": {
+        "type": "integer",
+        "description": "Unique identifier for each record"
+      },
+      "name": {
+        "type": "string",
+        "description": "Name of the entity"
+      },
+      "value": {
+        "type": "number",
+        "description": "Numeric value associated with the entity"
+      },
+      "is_active": {
+        "type": "boolean",
+        "description": "Whether the entity is active"
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "List of tags associated with the entity"
+      },
+      "metadata": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
     },
-    "required": ["date", "heart_rate", "systolic_bp", "diastolic_bp", "oxygen_saturation"]
-  }
+    "required": ["id", "name", "value", "is_active", "tags", "metadata"]
+  },
+  "num_records": 5
 }

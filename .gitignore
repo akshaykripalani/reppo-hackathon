@@ -1,4 +1,8 @@
-# Environment variables
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+
+# Environment variables and secrets
 .env
 
 # Python

@@ -30,7 +30,19 @@ This README provides an overview of the Reppo Solver Node, its architecture, set
 
 ## Overview ✨
 
-**Reppo.Exchange** is a decentralized data exchange platform that enables data buyers (Requestors) to post **Requests for Data (RFDs)** specifying their dataset requirements. Solver Nodes, like this one, respond to these RFDs by generating or sourcing the requested data, validating it, and submitting it to the platform for rewards. The platform leverages blockchain technology (Ethereum), IPFS for decentralized storage, and NFTs for access control to ensure transparency, security, and incentivization.
+Reppo.Exchange enables:
+- **Intent-Based Data Access**: AI agents broadcast Requests for Data (RFDs) that solver nodes fulfill
+- **Decentralized MCP Network**: Distributed network of solver nodes providing MCP-compliant data services
+- **Permissionless Participation**: Join the network by staking a Reppo Solver NFT
+- **Token Incentives**: Earn $REPPO tokens for fulfilling RFDs
+- **Standardized Integration**: MCP protocol ensures consistent data access across the network
+
+The Solver Node performs these key functions:
+1. **RFD Processing**: Listens for and processes Requests for Data on the blockchain
+2. **MCP Integration**: Connects to MCP servers to fulfill data requests
+3. **Data Generation/Querying**: Uses MCP tools (like DynamoDB) to generate or query data
+4. **NFT Verification**: Ensures node operator owns a Reppo Solver NFT
+5. **Solution Submission**: Submits verified solutions to the Reppo Exchange
 
 The Reppo Solver Node is a key participant in this ecosystem, performing the following tasks:
 
@@ -47,26 +59,29 @@ The Solver Node is designed to be modular, extensible, and easy to integrate wit
 ## Architecture 🏗️
 
 The Reppo Solver Node is built as a Python application with a modular architecture, separating concerns into distinct components. This design ensures maintainability, scalability, and flexibility for integrating with different data sources and blockchain networks.
+The Solver Node implements a modular architecture designed for the decentralized MCP network:
 
 ### Components
 
 The Solver Node consists of the following key components, each implemented in a dedicated Python module:
 
 1. **RFDListener (`rfdListener.py`)**
-   - **Purpose**: Listens for `RFDPosted` events emitted by the Reppo Exchange smart contract.
-   - **Functionality**: Uses `web3.py` to connect to an Ethereum node (via `WEB3_RPC_URL`) and polls for new RFD events. When an RFD is detected, it parses the event data into a dictionary and passes it to a callback function for processing.
-   - **Dependencies**: `web3.py`, `python-dotenv`.
+   - **Purpose**: Listens for `RFDPosted` events on the Reppo Exchange
+   - **Functionality**: 
+     - Monitors blockchain for new RFDs
+     - Parses RFD intents (data requirements)
+     - Routes to appropriate solver components
+   - **Dependencies**: `web3.py`, `python-dotenv`
 
-2. **DataSolver (`dataSolver.py`)**
-   - **Purpose**: Generates or sources datasets that fulfill RFD requirements.
-   - **Functionality**: Supports multiple data providers:
-     - **HuggingFace**: Uses HuggingFace models for dataset generation
-     - **Mock**: Generates synthetic test data locally
-     - **OpenGradient**: Uses OpenGradient's hosted models
-     - **MCP**: Connects to an MCP server for data generation
-     - **LocalLLM**: Uses a locally hosted LLM model
-   - Saves generated datasets as JSON files in the `data/` directory.
-   - **Dependencies**: `requests`, `python-dotenv`.
+2. **DataSolver (`datasolver/`)**
+   - **Purpose**: MCP-compliant data generation and querying
+   - **Functionality**: 
+     - **MCP Provider**: Primary provider for production
+       - DynamoDB Tool: Query and generate data from DynamoDB
+       - Extensible for additional MCP tools
+     - **HuggingFace Provider**: For AI-powered generation
+     - **Mock Provider**: For testing and development
+   - **Dependencies**: `mcp-sdk`, `requests`, `python-dotenv`
 
 3. **IPFSUploader (`ipfsUploader.py`)**
    - **Purpose**: Uploads datasets to IPFS for decentralized storage.
@@ -95,15 +110,20 @@ The Solver Node consists of the following key components, each implemented in a 
 
 ### Workflow
 
-The Solver Node follows this workflow to process an RFD:
+1. **RFD Detection & Intent Processing**:
+   - Listener detects `RFDPosted` event
+   - Extracts RFD intent (data requirements)
+   - Validates NFT ownership
 
-1. **RFD Detection**:
-   - The `RFDListener` detects a new `RFDPosted` event on the Reppo Exchange smart contract.
-   - The RFD details (ID, name, description, schema) are extracted and passed to the `SolverNode`.
+2. **MCP Tool Selection**:
+   - Analyzes RFD requirements
+   - Selects appropriate MCP tool (e.g., DynamoDB)
+   - Configures tool parameters
 
-2. **NFT Verification**:
-   - The `NFTAuthorizer` checks if the wallet address (`WALLET_ADDRESS`) owns a Reppo Node NFT.
-   - If no NFT is found, the RFD is skipped.
+3. **Data Generation/Querying**:
+   - Production: Uses MCP tools for real data
+   - Test: Uses HuggingFace for AI generation
+   - Mock: Generates synthetic data
 
 3. **Dataset Generation**:
    - The `DataSolver` uses the configured data provider to generate a dataset matching the RFD schema.

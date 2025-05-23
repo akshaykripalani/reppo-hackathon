@@ -1,4 +1,6 @@
 # main.py
+"""Main entry point for the solver node."""
+
 import click
 import logging
 from solverNode import SolverNode
@@ -20,11 +22,16 @@ BANNER = """
            |_|   |_|                                   
 """
 
-@click.command()
+@click.group()
+def cli():
+    """Solver Node CLI - A tool for processing Requests for Data (RFDs)"""
+    pass
+
+@cli.command()
 @click.option('--test', is_flag=True, help='Test mode: Process a sample RFD file with real data generation')
 @click.option('--mock', is_flag=True, help='Mock mode: Simulate the entire pipeline with mock data and services')
 @click.option('--rfd-file', default='sample_rfd.json', help='Path to sample RFD JSON file (used in test mode)')
-def main(test: bool, mock: bool, rfd_file: str):
+def start(test: bool, mock: bool, rfd_file: str):
     """Start the solver node
     
     Test mode (--test):
@@ -53,11 +60,14 @@ def main(test: bool, mock: bool, rfd_file: str):
     
     # Run the node
     try:
-        node.run()
+        if test or mock:
+            node._run_test_mode()
+        else:
+            node._run_production_mode()
     except KeyboardInterrupt:
         logger.info("Solver node stopped by user")
     except Exception as e:
         logger.error(f"Solver node failed: {str(e)}")
 
 if __name__ == '__main__':
-    main()
+    cli()
