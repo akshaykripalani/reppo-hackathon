@@ -1,7 +1,15 @@
 # main.py
 import click
-import json
+import logging
 from solverNode import SolverNode
+from typing import Optional
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger('Main')
 
 BANNER = """
   ____                          _   _           _      
@@ -12,16 +20,11 @@ BANNER = """
            |_|   |_|                                   
 """
 
-@click.group()
-def cli():
-    """Reppo Solver Node CLI"""
-    pass
-
-@cli.command()
+@click.command()
 @click.option('--test', is_flag=True, help='Test mode: Process a sample RFD file with real data generation')
 @click.option('--mock', is_flag=True, help='Mock mode: Simulate the entire pipeline with mock data and services')
 @click.option('--rfd-file', default='sample_rfd.json', help='Path to sample RFD JSON file (used in test mode)')
-def start(test, mock, rfd_file):
+def main(test: bool, mock: bool, rfd_file: str):
     """Start the solver node
     
     Test mode (--test):
@@ -38,37 +41,23 @@ def start(test, mock, rfd_file):
     """
     print(BANNER)
     
-    if test and mock:
-        print("Warning: Both test and mock modes specified. Mock mode will take precedence.")
-        test = False
+    # Initialize solver node
+    try:
+        node = SolverNode(
+            test_mode=test,
+            mock_mode=mock
+        )
+    except Exception as e:
+        logger.error(f"Failed to initialize solver node: {str(e)}")
+        return
     
-    node = SolverNode(test_mode=test, mock_mode=mock)
-    
-    if mock:
-        # Mock mode uses node.run() which handles sample RFD processing
+    # Run the node
+    try:
         node.run()
-    elif test:
-        print("Running in TEST mode:")
-        print("- Processing sample RFD file")
-        print("- Using real data generation (if available)")
-        print("- Skipping blockchain interactions")
-        try:
-            with open(rfd_file, 'r') as f:
-                sample_rfd = json.load(f)
-            print(f"Processing test RFD from {rfd_file}")
-            node.process_rfd(sample_rfd)
-        except FileNotFoundError:
-            print(f"Error: Sample RFD file not found at {rfd_file}")
-        except json.JSONDecodeError:
-            print(f"Error: Invalid JSON in {rfd_file}")
-        except Exception as e:
-            print(f"Error processing test RFD: {str(e)}")
-    else:
-        print(f"Starting Reppo Solver Node in PRODUCTION mode for wallet {node.wallet_address}")
-        print("- Listening for RFDs on blockchain")
-        print("- Using real data generation (if available)")
-        print("- Using real blockchain interactions")
-        node.run()
+    except KeyboardInterrupt:
+        logger.info("Solver node stopped by user")
+    except Exception as e:
+        logger.error(f"Solver node failed: {str(e)}")
 
-if __name__ == "__main__":
-    cli()
+if __name__ == '__main__':
+    main()

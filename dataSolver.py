@@ -3,11 +3,12 @@ import os
 import json
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, List
 from dataclasses import dataclass
 from enum import Enum
 import random
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(
@@ -15,6 +16,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger('DataSolver')
+
+# Load environment variables
+load_dotenv()
 
 class ProviderType(Enum):
     """Supported data provider types"""
@@ -27,36 +31,60 @@ class ProviderType(Enum):
 @dataclass
 class DatasetConfig:
     """Configuration for dataset generation"""
+    provider_type: ProviderType
+    num_records: int = 100
+    date_range: List[str] = None
+    number_range: List[int] = None
     output_dir: str = "data"
-    num_records: int = 10
-    date_range: tuple[str, str] = ("2024-01-01", "2024-12-31")
-    number_range: tuple[float, float] = (0.0, 100.0)
-    provider_type: ProviderType = ProviderType.MOCK
     provider_config: Dict[str, Any] = None
+    
+    def __post_init__(self):
+        if self.date_range is None:
+            self.date_range = [
+                os.getenv("DATE_RANGE_START", "2024-01-01"),
+                os.getenv("DATE_RANGE_END", "2024-12-31")
+            ]
+        if self.number_range is None:
+            self.number_range = [
+                int(os.getenv("NUMBER_RANGE_MIN", "0")),
+                int(os.getenv("NUMBER_RANGE_MAX", "100"))
+            ]
+        if self.provider_config is None:
+            self.provider_config = {}
 
 class DataProvider(ABC):
     """Abstract base class for data providers"""
     
-    def __init__(self, config: Dict[str, Any] = None):
-        self.config = config or {}
+    def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.mock_mode = os.getenv("MOCK_MODE", "false").lower() == "true"
+        self.test_mode = os.getenv("TEST_MODE", "false").lower() == "true"
+        self.num_records = int(os.getenv("NUM_RECORDS", "100"))
+        self.date_range = [
+            os.getenv("DATE_RANGE_START", "2024-01-01"),
+            os.getenv("DATE_RANGE_END", "2024-12-31")
+        ]
+        self.number_range = [
+            int(os.getenv("NUMBER_RANGE_MIN", "0")),
+            int(os.getenv("NUMBER_RANGE_MAX", "100"))
+        ]
     
     @abstractmethod
-    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
-        """Generate a dataset based on the RFD schema and configuration"""
+    def generate_dataset(self, rfd: Dict) -> Dict[str, Any]:
+        """Generate a dataset based on the RFD schema"""
         pass
 
 class HuggingFaceProvider(DataProvider):
     """Provider that generates datasets using HuggingFace models"""
     
-    def __init__(self, config: Dict[str, Any] = None):
-        super().__init__(config)
-        self.token = config.get("token") if config else None
-        self.model = config.get("model") if config else None
+    def __init__(self):
+        super().__init__()
+        self.token = os.getenv("HUGGINGFACE_TOKEN")
+        self.model = os.getenv("MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
         if not self.token or not self.model:
             self.logger.warning("HuggingFace token or model not configured")
     
-    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+    def generate_dataset(self, rfd: Dict) -> Dict[str, Any]:
         """Generate a dataset using HuggingFace model"""
         if not self.token or not self.model:
             self.logger.error("HuggingFace provider not properly configured")
@@ -69,13 +97,13 @@ class HuggingFaceProvider(DataProvider):
 class MockProvider(DataProvider):
     """Provider that generates mock data for testing"""
     
-    def __init__(self, config: Dict[str, Any] = None):
-        super().__init__(config)
+    def __init__(self):
+        super().__init__()
         self.logger.info("Initialized Mock provider for testing")
     
-    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+    def generate_dataset(self, rfd: Dict) -> Dict[str, Any]:
         """Generate mock data based on RFD schema"""
-        self.logger.info(f"Generating mock dataset with {config.num_records} records")
+        self.logger.info(f"Generating mock dataset with {self.num_records} records")
         
         # Extract schema information
         schema = rfd.get("schema", {})
@@ -84,34 +112,26 @@ class MockProvider(DataProvider):
         
         # Generate mock records
         records = []
-        for _ in range(config.num_records):
+        for _ in range(self.num_records):
             record = {}
             for field, field_schema in properties.items():
-                if field_schema.get("type") == "string":
-                    if field_schema.get("format") == "date":
-                        # Generate a random date in the config's date range
-                        start_date = datetime.strptime(config.date_range[0], "%Y-%m-%d")
-                        end_date = datetime.strptime(config.date_range[1], "%Y-%m-%d")
-                        days_between = (end_date - start_date).days
-                        random_days = random.randint(0, days_between)
-                        record[field] = (start_date + timedelta(days=random_days)).strftime("%Y-%m-%d")
-                    else:
-                        record[field] = f"mock_{field}_{random.randint(1, 1000)}"
-                elif field_schema.get("type") == "number":
-                    min_val, max_val = config.number_range
-                    record[field] = round(random.uniform(min_val, max_val), 2)
-                elif field_schema.get("type") == "integer":
-                    min_val, max_val = config.number_range
-                    record[field] = random.randint(int(min_val), int(max_val))
-                elif field_schema.get("type") == "boolean":
+                field_type = field_schema.get("type")
+                if field_type == "string":
+                    record[field] = f"mock_value_{random.randint(1, 1000)}"
+                elif field_type == "number":
+                    record[field] = random.uniform(self.number_range[0], self.number_range[1])
+                elif field_type == "integer":
+                    record[field] = random.randint(self.number_range[0], self.number_range[1])
+                elif field_type == "boolean":
                     record[field] = random.choice([True, False])
-            
-            # Ensure all required fields are present
-            for field in required:
-                if field not in record:
-                    self.logger.warning(f"Required field {field} not in schema properties")
-                    record[field] = None
-            
+                elif field_type == "string" and "date" in field.lower():
+                    start_date = datetime.strptime(self.date_range[0], "%Y-%m-%d")
+                    end_date = datetime.strptime(self.date_range[1], "%Y-%m-%d")
+                    days_between = (end_date - start_date).days
+                    random_days = random.randint(0, days_between)
+                    record[field] = (start_date + timedelta(days=random_days)).strftime("%Y-%m-%d")
+                else:
+                    record[field] = f"mock_value_{random.randint(1, 1000)}"
             records.append(record)
         
         return {"data": records}
@@ -119,12 +139,12 @@ class MockProvider(DataProvider):
 class OpenGradientProvider(DataProvider):
     """Provider using OpenGradient's hosted models"""
     
-    def __init__(self, config: Dict[str, Any] = None):
-        super().__init__(config)
-        self.model_name = self.config.get("model_name", "llama-8")
+    def __init__(self):
+        super().__init__()
+        self.model_name = os.getenv("MODEL_NAME", "llama-8")
         self.logger.info(f"Initialized OpenGradient provider with model: {self.model_name}")
 
-    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+    def generate_dataset(self, rfd: Dict) -> Dict[str, Any]:
         self.logger.info(f"Generating dataset using OpenGradient model: {self.model_name}")
         # Implementation details...
         return {"data": []}  # Placeholder
@@ -132,12 +152,12 @@ class OpenGradientProvider(DataProvider):
 class MCPProvider(DataProvider):
     """Provider using MCP server"""
     
-    def __init__(self, config: Dict[str, Any] = None):
-        super().__init__(config)
-        self.server_url = self.config.get("server_url", "http://localhost:8000")
+    def __init__(self):
+        super().__init__()
+        self.server_url = os.getenv("MCP_SERVER_URL", "http://localhost:8000")
         self.logger.info(f"Initialized MCP provider with server: {self.server_url}")
 
-    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+    def generate_dataset(self, rfd: Dict) -> Dict[str, Any]:
         self.logger.info(f"Generating dataset using MCP server: {self.server_url}")
         # Implementation details...
         return {"data": []}  # Placeholder
@@ -145,14 +165,14 @@ class MCPProvider(DataProvider):
 class LocalLLMProvider(DataProvider):
     """Provider using locally hosted LLM"""
     
-    def __init__(self, config: Dict[str, Any] = None):
-        super().__init__(config)
-        self.model_path = self.config.get("model_path")
+    def __init__(self):
+        super().__init__()
+        self.model_path = os.getenv("MODEL_PATH")
         if not self.model_path:
-            raise ValueError("model_path must be specified for LocalLLM provider")
+            raise ValueError("MODEL_PATH must be specified for LocalLLM provider")
         self.logger.info(f"Initialized Local LLM provider with model at: {self.model_path}")
 
-    def generate_dataset(self, rfd: Dict, config: DatasetConfig) -> Dict[str, Any]:
+    def generate_dataset(self, rfd: Dict) -> Dict[str, Any]:
         self.logger.info(f"Generating dataset using local model: {self.model_path}")
         # Implementation details...
         return {"data": []}  # Placeholder
@@ -174,7 +194,7 @@ class DataSolver:
         Args:
             config: Configuration for dataset generation
         """
-        self.config = config or DatasetConfig()
+        self.config = config or DatasetConfig(provider_type=ProviderType.MOCK)
         self.logger = logging.getLogger('DataSolver')
         
         # Initialize provider
@@ -182,7 +202,7 @@ class DataSolver:
         if not provider_class:
             raise ValueError(f"Unsupported provider type: {self.config.provider_type}")
         
-        self.provider = provider_class(self.config.provider_config)
+        self.provider = provider_class()
         self.logger.info(f"Initialized DataSolver with provider: {self.config.provider_type.value}")
         
         # Ensure output directory exists
@@ -206,7 +226,7 @@ class DataSolver:
                     return None
             
             # Generate dataset using the configured provider
-            dataset = self.provider.generate_dataset(rfd, self.config)
+            dataset = self.provider.generate_dataset(rfd)
             if dataset is None:
                 return None
                 

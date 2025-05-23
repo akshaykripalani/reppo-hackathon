@@ -6,7 +6,7 @@ from dataSolver import DataSolver, DatasetConfig, ProviderType
 from ipfsUploader import upload_to_ipfs
 from nftAuthorizer import NFTAuthorizer
 from submitSolution import SolutionSubmitter
-from typing import Dict
+from typing import Dict, Optional
 import json
 import random
 import time
@@ -20,98 +20,96 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-load_dotenv()
-
 class SolverNode:
-    def __init__(self, config_path: str = "config.json", test_mode: bool = False, mock_mode: bool = False):
-        """Initialize the solver node with configuration
+    def __init__(self, test_mode: bool = False, mock_mode: bool = False):
+        """Initialize the solver node
         
         Args:
-            config_path: Path to configuration file
             test_mode: Run in test mode (uses real data generation)
             mock_mode: Run in mock mode (uses mock data and responses)
         """
-        # Initialize logger
         self.logger = logging.getLogger('SolverNode')
-        
-        # Load configuration from file or environment
-        try:
-            with open(config_path) as f:
-                self.config = json.load(f)
-        except FileNotFoundError:
-            # Fallback to environment variables
-            self.config = {
-                "wallet_address": os.getenv("WALLET_ADDRESS", "0xMockWalletAddress"),  # Default mock wallet for mock mode
-                "web3_rpc_url": os.getenv("WEB3_RPC_URL"),
-                "chain_id": os.getenv("CHAIN_ID"),
-                "private_key": os.getenv("PRIVATE_KEY"),
-                "exchange_contract_address": os.getenv("EXCHANGE_CONTRACT_ADDRESS"),
-                "nft_contract_address": os.getenv("NFT_CONTRACT_ADDRESS"),
-                "pinata_api_key": os.getenv("PINATA_API_KEY"),
-                "pinata_secret_api_key": os.getenv("PINATA_SECRET_API_KEY")
-            }
-            if not self.config["wallet_address"] and not mock_mode:
-                raise ValueError("WALLET_ADDRESS must be set in environment or config.json")
-        
-        # Set operation mode
         self.test_mode = test_mode
         self.mock_mode = mock_mode
         
-        # Validate mode configuration
-        if self.test_mode and self.mock_mode:
-            print("Warning: Both test and mock modes specified. Using test mode.")
-            self.mock_mode = False
+        # Load environment variables
+        load_dotenv()
         
         # Initialize components based on mode
+        self._initialize_components()
+        
+        # Print mode information
+        self._print_mode_info()
+    
+    def _initialize_components(self):
+        """Initialize node components based on mode"""
+        # Set wallet address
         if self.mock_mode:
-            # Mock mode uses mock provider
-            solver_config = DatasetConfig(
+            self.wallet_address = "0xMockWalletAddress"
+        else:
+            self.wallet_address = os.getenv("WALLET_ADDRESS")
+            if not self.wallet_address:
+                raise ValueError("WALLET_ADDRESS must be set in .env file")
+        
+        # Initialize data solver
+        solver_config = self._create_solver_config()
+        self.solver = DataSolver(solver_config)
+        
+        # Initialize other components based on mode
+        self.authorizer = None if (self.test_mode or self.mock_mode) else NFTAuthorizer()
+        self.submitter = None if (self.test_mode or self.mock_mode) else SolutionSubmitter()
+        self.listener = None if (self.test_mode or self.mock_mode) else RFDListener()
+    
+    def _create_solver_config(self) -> DatasetConfig:
+        """Create solver configuration based on mode"""
+        if self.mock_mode:
+            return DatasetConfig(
                 provider_type=ProviderType.MOCK,
                 num_records=100,
                 date_range=["2024-01-01", "2024-12-31"],
                 number_range=[0, 100],
                 output_dir="data"
             )
-        else:
-            # Test mode MUST use HuggingFace provider
-            if self.test_mode:
-                solver_config = DatasetConfig(
-                    provider_type=ProviderType.HUGGINGFACE,  # Force HuggingFace in test mode
-                    num_records=100,
-                    date_range=["2024-01-01", "2024-12-31"],
-                    number_range=[0, 100],
-                    output_dir="data",
-                    provider_config={
-                        "token": os.getenv("HUGGINGFACE_TOKEN"),
-                        "model": "mistralai/Mistral-7B-Instruct-v0.2"
-                    }
-                )
-            else:
-                # Production mode
-                solver_config = DatasetConfig(
-                    provider_type=ProviderType.HUGGINGFACE,
-                    num_records=100,
-                    date_range=["2024-01-01", "2024-12-31"],
-                    number_range=[0, 100],
-                    output_dir="data",
-                    provider_config={
-                        "token": os.getenv("HUGGINGFACE_TOKEN"),
-                        "model": "mistralai/Mistral-7B-Instruct-v0.2"
-                    }
-                )
         
-        # Initialize solver with appropriate config
-        self.solver = DataSolver(solver_config)
+        # Get configuration from environment variables
+        num_records = int(os.getenv("NUM_RECORDS", "100"))
+        date_range = [
+            os.getenv("DATE_RANGE_START", "2024-01-01"),
+            os.getenv("DATE_RANGE_END", "2024-12-31")
+        ]
+        number_range = [
+            int(os.getenv("NUMBER_RANGE_MIN", "0")),
+            int(os.getenv("NUMBER_RANGE_MAX", "100"))
+        ]
+        output_dir = os.getenv("OUTPUT_DIR", "data")
         
-        # Initialize other components based on mode
-        self.wallet_address = self.config.get("wallet_address")
-        if not self.wallet_address:
-            raise ValueError("WALLET_ADDRESS must be set in environment or config.json")
-            
-        self.authorizer = None if (self.test_mode or self.mock_mode) else NFTAuthorizer()
-        self.submitter = None if (self.test_mode or self.mock_mode) else SolutionSubmitter(self.config)
-
-        # Print mode information only once during initialization
+        if self.test_mode:
+            return DatasetConfig(
+                provider_type=ProviderType.HUGGINGFACE,
+                num_records=num_records,
+                date_range=date_range,
+                number_range=number_range,
+                output_dir=output_dir,
+                provider_config={
+                    "token": os.getenv("HUGGINGFACE_TOKEN"),
+                    "model": os.getenv("MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
+                }
+            )
+        
+        return DatasetConfig(
+            provider_type=ProviderType.HUGGINGFACE,
+            num_records=num_records,
+            date_range=date_range,
+            number_range=number_range,
+            output_dir=output_dir,
+            provider_config={
+                "token": os.getenv("HUGGINGFACE_TOKEN"),
+                "model": os.getenv("MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
+            }
+        )
+    
+    def _print_mode_info(self):
+        """Print information about the current mode"""
         if self.mock_mode:
             print("\nRunning in MOCK mode:")
             print("- Using mock data generation")
@@ -130,103 +128,97 @@ class SolverNode:
             print("- Using real blockchain interactions")
             print("- Requires Reppo NFT ownership")
             print(f"- Using wallet: {self.wallet_address}")
-
-    def process_rfd(self, rfd: Dict):
-        """Process an RFD through the full flow"""
-        rfd_id = rfd["rfd_id"]
-        print(f"Processing RFD #{rfd_id} with wallet {self.wallet_address}")
-
+    
+    def process_rfd(self, rfd: Dict) -> Optional[Dict]:
+        """Process an RFD and generate a solution
+        
+        Args:
+            rfd: The RFD to process
+            
+        Returns:
+            Optional[Dict]: Processing results if successful, None otherwise
+        """
+        rfd_id = rfd.get("rfd_id", "unknown")
+        self.logger.info(f"Processing RFD #{rfd_id} with wallet {self.wallet_address}")
+        
         # Skip NFT check in test/mock modes
         if self.authorizer and not self.authorizer.has_nft(self.wallet_address):
-            print(f"Wallet {self.wallet_address} does not own a Reppo NFT. Skipping RFD #{rfd_id}")
-            return
-
-        # Generate dataset
-        if self.mock_mode:
-            # In mock mode, always generate mock data
-            mock_data = {
-                "data": [
-                    {
-                        "mock_field_1": f"mock_value_{i}",
-                        "mock_field_2": random.randint(1, 100),
-                        "mock_field_3": random.choice([True, False]),
-                        "mock_field_4": datetime.now().strftime("%Y-%m-%d")
-                    }
-                    for i in range(10)  # Generate 10 mock records
-                ]
-            }
-            file_path = os.path.join("data", f"rfd_{rfd_id}_solution.json")
-            os.makedirs("data", exist_ok=True)
-            with open(file_path, 'w') as f:
-                json.dump(mock_data, f, indent=2)
-            print(f"Generated mock dataset at: {file_path}")
-        else:
-            # Normal mode - use configured provider
-            file_path = self.solver.solve_rfd(rfd)
-            if file_path is None:
-                if self.test_mode:
-                    raise Exception("dataSolver.py not configured. Use --mock mode to continue without setting up dataSolver.py")
-                return
-            elif not os.path.exists(file_path):
-                print(f"Failed to generate dataset for RFD #{rfd_id}")
-                return
-
-        # Handle IPFS upload
+            self.logger.warning(f"Wallet {self.wallet_address} does not own a Reppo NFT. Skipping RFD #{rfd_id}")
+            return None
+        
         try:
+            # Generate dataset
+            dataset_path = self.solver.solve_rfd(rfd)
+            if not dataset_path:
+                self.logger.error(f"Failed to generate dataset for RFD #{rfd_id}")
+                return None
+            
+            # In mock mode, generate mock storage and transaction info
             if self.mock_mode:
-                ipfs_uri = f"ipfs://mockCID_{rfd_id}_{int(time.time())}"
-                print(f"Mock mode: Generated IPFS URI: {ipfs_uri}")
+                mock_cid = f"mockCID_{rfd_id}_{int(time.time())}"
+                mock_tx = f"0x{'0' * 40}_{rfd_id}_{int(time.time())}"
+                results = {
+                    "rfd_id": rfd_id,
+                    "wallet": self.wallet_address,
+                    "dataset_path": dataset_path,
+                    "storage_uri": f"ipfs://{mock_cid}",
+                    "tx_hash": mock_tx
+                }
             else:
-                ipfs_uri = upload_to_ipfs(file_path) if self.submitter else "ipfs://mockCID"
-            print(f"Uploaded to IPFS: {ipfs_uri}")
+                # Upload to IPFS
+                storage_uri = upload_to_ipfs(dataset_path)
+                if not storage_uri:
+                    self.logger.error(f"Failed to upload dataset for RFD #{rfd_id}")
+                    return None
+                
+                # Submit solution
+                tx_hash = self.submitter.submit_solution(rfd_id, storage_uri)
+                if not tx_hash:
+                    self.logger.error(f"Failed to submit solution for RFD #{rfd_id}")
+                    return None
+                
+                results = {
+                    "rfd_id": rfd_id,
+                    "wallet": self.wallet_address,
+                    "dataset_path": dataset_path,
+                    "storage_uri": storage_uri,
+                    "tx_hash": tx_hash
+                }
+            
+            self.logger.info(f"Successfully processed RFD #{rfd_id}")
+            return results
+            
         except Exception as e:
-            print(f"IPFS upload failed for RFD #{rfd_id}: {str(e)}")
-            return
-
-        # Handle solution submission
-        if self.mock_mode:
-            # Generate a deterministic but unique mock transaction hash
-            mock_tx = f"0x{'0' * 40}_{rfd_id}_{int(time.time())}"
-            print(f"Mock mode: Generated transaction hash: {mock_tx}")
-            print(f"Solution submitted for RFD #{rfd_id} by {self.wallet_address}. Tx hash: {mock_tx}")
-        else:
-            tx_hash = self.submitter.submit_solution(rfd_id, file_path) if self.submitter else "0xMockTransactionHash"
-            if tx_hash:
-                print(f"Solution submitted for RFD #{rfd_id} by {self.wallet_address}. Tx hash: {tx_hash}")
-            else:
-                print(f"Failed to submit solution for RFD #{rfd_id}")
-
+            self.logger.error(f"Error processing RFD #{rfd_id}: {str(e)}")
+            return None
+    
     def run(self):
         """Run the Solver Node"""
-        if self.mock_mode:
-            print("\nProcessing sample RFD in mock mode...")
-            try:
-                # Load and process sample RFD
-                with open("sample_rfd.json") as f:
-                    sample_rfd = json.load(f)
-                self.process_rfd(sample_rfd)
-                return
-            except FileNotFoundError:
-                print("Error: sample_rfd.json not found. Please create a sample RFD file.")
-                return
-            except Exception as e:
-                print(f"Error processing sample RFD: {str(e)}")
-                return
-        elif self.test_mode:
-            print("Test mode: Processing sample RFD file")
-            try:
-                with open("sample_rfd.json") as f:
-                    sample_rfd = json.load(f)
-                self.process_rfd(sample_rfd)
-                return
-            except FileNotFoundError:
-                print("Error: sample_rfd.json not found. Please create a sample RFD file.")
-                return
-            except Exception as e:
-                print(f"Error processing sample RFD: {str(e)}")
-                return
+        if self.mock_mode or self.test_mode:
+            self._run_test_mode()
         else:
-            if not self.authorizer:
-                raise RuntimeError("Cannot run in production mode without authorizer")
-            print("Production mode: Starting RFD listener")
-            self.listener.listen_for_rfds(self.process_rfd)
+            self._run_production_mode()
+    
+    def _run_test_mode(self):
+        """Run in test/mock mode"""
+        print("\nProcessing sample RFD...")
+        try:
+            with open("sample_rfd.json") as f:
+                sample_rfd = json.load(f)
+            results = self.process_rfd(sample_rfd)
+            if results:
+                print(f"Successfully processed sample RFD: {results}")
+            else:
+                print("Failed to process sample RFD")
+        except FileNotFoundError:
+            print("Error: sample_rfd.json not found. Please create a sample RFD file.")
+        except Exception as e:
+            print(f"Error processing sample RFD: {str(e)}")
+    
+    def _run_production_mode(self):
+        """Run in production mode"""
+        if not self.authorizer:
+            raise RuntimeError("Cannot run in production mode without authorizer")
+        
+        print("Production mode: Starting RFD listener")
+        self.listener.listen_for_rfds(self.process_rfd)
