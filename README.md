@@ -245,9 +245,6 @@ NFT_CONTRACT_ABI_PATH=./abis/nft_abi.json
 PINATA_API_KEY=your-pinata-api-key
 PINATA_SECRET_API_KEY=your-pinata-secret-api-key
 
-# Two Ligma server (optional, defaults to localhost)
-DATANODE_URL=http://localhost:5000/api/agent/run
-```
 
 **Security Notes**:
 - Never commit your `.env` file to version control.
