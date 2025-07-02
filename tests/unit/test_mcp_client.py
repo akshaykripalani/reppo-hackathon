@@ -18,7 +18,7 @@ async def test_execute_rfd_success(mcp_client, mocker):
     """Tests the successful execution of an RFD by mocking the streamablehttp_client."""
     # Arrange
     mock_read_stream = MagicMock()
-    # The client now expects two responses: one for 'initialize' and one for 'tools/call'
+    # The client can handle responses in any order, so we just provide them.
     mock_read_stream.__aiter__.return_value = [
         SessionMessage(
             message=types.JSONRPCResponse(jsonrpc="2.0", result={"protocolVersion": "1.0"}, id=0)
@@ -48,8 +48,8 @@ async def test_execute_rfd_success(mcp_client, mocker):
 
     # Assert
     assert result == {"status": "success", "data": "mock_data"}
-    # Check that both initialize and tools/call were sent
     assert mock_write_stream.send.call_count == 2
+    # You could add more specific asserts here to check the content of the two sent messages if needed.
 
 @pytest.mark.anyio
 async def test_execute_rfd_error_response(mcp_client, mocker):

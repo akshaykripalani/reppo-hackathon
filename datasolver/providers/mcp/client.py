@@ -26,48 +26,60 @@ class MCPClient:
 
         try:
             async with streamablehttp_client(mcp_endpoint_url, timeout=self.timeout) as (read_stream, write_stream, _):
-                # Step 1: Initialize the session
+                
+                # Use a dictionary to track outstanding requests
+                pending_requests = {}
+
+                # Create and send initialize request
                 init_id = 0
                 init_request = types.JSONRPCRequest(
-                    jsonrpc="2.0",
-                    method="initialize",
-                    params={"protocolVersion": "1.0"},
-                    id=init_id
+                    jsonrpc="2.0", method="initialize",
+                    params={"protocolVersion": "1.0"}, id=init_id
                 )
+                init_event = asyncio.Event()
+                pending_requests[init_id] = init_event
                 await write_stream.send(SessionMessage(message=types.JSONRPCMessage(root=init_request)))
-                
-                # Wait for initialize result
-                async for init_response in read_stream:
-                    if hasattr(init_response.message, 'id') and init_response.message.id == init_id:
-                        logger.info("Session initialized successfully.")
-                        break
-                
-                # Step 2: Call the tool
-                request_id = 1
-                request = types.JSONRPCRequest(
-                    jsonrpc="2.0",
-                    method="tools/call",
-                    params={"name": "process_rfd", "arguments": rfd},
-                    id=request_id,
+
+                # Create and send tool call request
+                tool_id = 1
+                tool_request = types.JSONRPCRequest(
+                    jsonrpc="2.0", method="tools/call",
+                    params={"name": "process_rfd", "arguments": rfd}, id=tool_id
                 )
-                json_rpc_message = types.JSONRPCMessage(root=request)
-                session_message = SessionMessage(message=json_rpc_message)
+                tool_event = asyncio.Event()
+                pending_requests[tool_id] = tool_event
+                await write_stream.send(SessionMessage(message=types.JSONRPCMessage(root=tool_request)))
                 
-                logger.info(f"Sending tools/call request to {mcp_endpoint_url}")
-                await write_stream.send(session_message)
-
-                # Wait for the corresponding response
+                # Single loop to process all incoming messages
+                tool_call_result = None
                 async for response_message in read_stream:
-                    if hasattr(response_message.message, 'id') and response_message.message.id == request_id:
+                    msg_id = getattr(response_message.message, 'id', None)
+                    if msg_id in pending_requests:
                         if isinstance(response_message.message, types.JSONRPCResponse):
-                            logger.info(f"Received response from {mcp_endpoint_url}")
-                            return response_message.message.result
+                            if msg_id == init_id:
+                                logger.info("Session initialized successfully.")
+                                pending_requests.pop(init_id).set()
+                            elif msg_id == tool_id:
+                                logger.info(f"Received tool call response from {mcp_endpoint_url}")
+                                tool_call_result = response_message.message.result
+                                pending_requests.pop(tool_id).set()
                         
-                        if isinstance(response_message.message, types.JSONRPCError):
-                            logger.error(f"Received error from server: {response_message.message.error}")
-                            raise RuntimeError(f"MCP Error: {response_message.message.error.message}")
+                        elif isinstance(response_message.message, types.JSONRPCError):
+                            error_msg = response_message.message.error.message
+                            logger.error(f"Received error from server: {error_msg}")
+                            raise RuntimeError(f"MCP Error: {error_msg}")
+                    
+                    # If all tracked requests are done, we can exit
+                    if not pending_requests:
+                        break
 
-                raise TimeoutError("Did not receive a matching response from the server.")
+                # Wait for events to be set, with a timeout
+                await asyncio.wait_for(asyncio.gather(*[event.wait() for event in pending_requests.values()]), timeout=self.timeout)
+
+                if tool_call_result is not None:
+                    return tool_call_result
+
+                raise TimeoutError("Did not receive a matching response for the tool call from the server.")
 
         except Exception as e:
             logger.error(f"Failed to execute RFD on remote node {mcp_endpoint_url}: {e}")
