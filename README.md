@@ -32,18 +32,18 @@ graph TD
 ## Setup and Installation
 
 1.  **Clone the repository:**
-    ```bash
+   ```bash
     git clone <repository_url>
     cd rfd-solver-node
-    ```
+   ```
 
 2.  **Create a virtual environment and install dependencies:**
     It is recommended to use a virtual environment.
-    ```bash
+   ```bash
     python -m venv .venv
     source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
-    pip install -r requirements.txt
-    ```
+   pip install -r requirements.txt
+   ```
     You will need to add `watchdog` and `mcp` to your `requirements.txt` file:
     ```
     watchdog
@@ -77,8 +77,8 @@ To test the full pipeline, create a new JSON file inside the `rfd_inbox` directo
 1.  Create a file named `nba_request.json` inside the `rfd_inbox` directory.
 2.  Paste the following content into the file:
 
-    ```json
-    {
+```json
+{
       "rfd_id": "nba_001",
       "service": "nba_player_stats",
       "metrics": ["points", "assists"],

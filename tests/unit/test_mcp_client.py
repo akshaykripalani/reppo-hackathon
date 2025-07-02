@@ -1,6 +1,7 @@
 import pytest
 import httpx
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
+from contextlib import asynccontextmanager
 
 # Since MCPClient is now in a provider subdirectory, we adjust the import path
 from datasolver.providers.mcp.client import MCPClient
@@ -14,18 +15,31 @@ def mcp_client():
 
 @pytest.mark.anyio
 async def test_execute_rfd_success(mcp_client, mocker):
-    """Tests the successful execution of an RFD with a simple HTTP client."""
+    """Tests the successful execution of an RFD by mocking the streamablehttp_client."""
     # Arrange
-    # Mock the response from the server
-    mock_response = httpx.Response(
-        200,
-        json={"jsonrpc": "2.0", "result": {"status": "success", "data": "mock_data"}, "id": 1}
-    )
+    mock_read_stream = MagicMock()
+    # The client now expects two responses: one for 'initialize' and one for 'tools/call'
+    mock_read_stream.__aiter__.return_value = [
+        SessionMessage(
+            message=types.JSONRPCResponse(jsonrpc="2.0", result={"protocolVersion": "1.0"}, id=0)
+        ),
+        SessionMessage(
+            message=types.JSONRPCResponse(
+                jsonrpc="2.0",
+                result={"status": "success", "data": "mock_data"},
+                id=1
+            )
+        )
+    ]
     
-    # Mock the AsyncClient's post method
-    mock_post = AsyncMock(return_value=mock_response)
-    mocker.patch("httpx.AsyncClient.post", mock_post)
-    
+    mock_write_stream = AsyncMock()
+
+    @asynccontextmanager
+    async def mock_client_context_manager(*args, **kwargs):
+        yield mock_read_stream, mock_write_stream, (lambda: "session-123")
+
+    mocker.patch("datasolver.providers.mcp.client.streamablehttp_client", side_effect=mock_client_context_manager)
+
     rfd = {"service": "test_service"}
     node_url = "http://test-node.com"
 
@@ -33,37 +47,33 @@ async def test_execute_rfd_success(mcp_client, mocker):
     result = await mcp_client.execute_rfd(rfd, node_url)
 
     # Assert
-    # Check that post was called correctly
-    mock_post.assert_awaited_once()
-    assert mock_post.call_args[0][0] == node_url
-    assert mock_post.call_args[1]['json']['method'] == 'tools/call'
-    
-    # Check the result
     assert result == {"status": "success", "data": "mock_data"}
+    # Check that both initialize and tools/call were sent
+    assert mock_write_stream.send.call_count == 2
 
 @pytest.mark.anyio
-async def test_execute_rfd_http_error(mcp_client, mocker):
-    """Tests that an HTTP error is handled correctly."""
+async def test_execute_rfd_error_response(mcp_client, mocker):
+    """Tests handling of a JSONRPCError from the server."""
     # Arrange
-    mock_response = httpx.Response(500, text="Internal Server Error")
-    mock_post = AsyncMock(return_value=mock_response)
-    mocker.patch("httpx.AsyncClient.post", mock_post)
+    mock_read_stream = MagicMock()
+    error_obj = types.ErrorData(code=-32000, message="Server error")
+    # Provide a successful init response, then an error for the tool call
+    mock_read_stream.__aiter__.return_value = [
+        SessionMessage(
+            message=types.JSONRPCResponse(jsonrpc="2.0", result={"protocolVersion": "1.0"}, id=0)
+        ),
+        SessionMessage(
+            message=types.JSONRPCError(jsonrpc="2.0", error=error_obj, id=1)
+        )
+    ]
+    mock_write_stream = AsyncMock()
+    
+    @asynccontextmanager
+    async def mock_client_context_manager(*args, **kwargs):
+        yield mock_read_stream, mock_write_stream, (lambda: "session-123")
 
-    # Act & Assert
-    with pytest.raises(httpx.HTTPStatusError):
-        await mcp_client.execute_rfd({}, "http://test-node.com")
-
-@pytest.mark.anyio
-async def test_execute_rfd_json_rpc_error(mcp_client, mocker):
-    """Tests that a JSON-RPC error in the response body is handled."""
-    # Arrange
-    mock_response = httpx.Response(
-        200,
-        json={"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error"}, "id": 1}
-    )
-    mock_post = AsyncMock(return_value=mock_response)
-    mocker.patch("httpx.AsyncClient.post", mock_post)
+    mocker.patch("datasolver.providers.mcp.client.streamablehttp_client", side_effect=mock_client_context_manager)
 
     # Act & Assert
     with pytest.raises(RuntimeError, match="MCP Error: Server error"):
-        await mcp_client.execute_rfd({}, "http://test-node.com") 
+        await mcp_client.execute_rfd({}, "http://test-node.com")

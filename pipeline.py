@@ -28,7 +28,7 @@ class RFDHandler(FileSystemEventHandler):
         self.router = router
         self.mcp_client = mcp_client
         self._processed_files = set()
-
+    
     def on_created(self, event):
         """Called when a file or directory is created."""
         if not event.is_directory and event.src_path not in self._processed_files:

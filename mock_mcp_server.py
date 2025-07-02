@@ -8,7 +8,7 @@ To run:
 uvicorn mock_mcp_server:server.app --host 127.0.0.1 --port 8001
 """
 
-from mcp.server import FastMCP
+from mcp.server.fastmcp import FastMCP, Context
 from typing import Dict, Any
 import logging
 
@@ -26,7 +26,7 @@ server = FastMCP(
 app = server.streamable_http_app()
 
 @server.tool()
-def process_rfd(rfd: Dict[str, Any]) -> Dict[str, Any]:
+async def process_rfd(rfd: Dict[str, Any], ctx: Context) -> None:
     """
     Processes a Request for Data (RFD) and returns a mock dataset.
     This simulates a real data node fetching and returning data.
@@ -35,24 +35,26 @@ def process_rfd(rfd: Dict[str, Any]) -> Dict[str, Any]:
     
     service = rfd.get("service")
     if service != "nba_player_stats":
-        return {
+        result = {
             "error": "Service not supported",
             "details": f"This node only supports 'nba_player_stats', not '{service}'."
         }
+    else:
+        metrics = rfd.get("metrics", ["points"])
+        season = rfd.get("season", "2024-25")
         
-    metrics = rfd.get("metrics", ["points"])
-    season = rfd.get("season", "2024-25")
+        # Mock data generation
+        mock_data = [
+            {"player": "LeBron James", "season": season, "stats": {m: 30 for m in metrics}},
+            {"player": "Stephen Curry", "season": season, "stats": {m: 28 for m in metrics}},
+            {"player": "Nikola Jokic", "season": season, "stats": {m: 26 for m in metrics}},
+        ]
+        
+        logger.info("Successfully processed RFD and returning mock data.")
+        
+        result = {
+            "status": "success",
+            "data": mock_data
+        }
     
-    # Mock data generation
-    mock_data = [
-        {"player": "LeBron James", "season": season, "stats": {m: 30 for m in metrics}},
-        {"player": "Stephen Curry", "season": season, "stats": {m: 28 for m in metrics}},
-        {"player": "Nikola Jokic", "season": season, "stats": {m: 26 for m in metrics}},
-    ]
-    
-    logger.info("Successfully processed RFD and returning mock data.")
-    
-    return {
-        "status": "success",
-        "data": mock_data
-    } 
+    await ctx.return_value(result) 
