@@ -18,28 +18,30 @@ class MCPTool(ABC):
     4. Handle errors and edge cases
     """
     
+    def __init__(self, name: str, description: str, capabilities: Dict[str, Any]):
+        self._name = name
+        self._description = description
+        self._capabilities = capabilities
+
     @property
-    @abstractmethod
     def name(self) -> str:
         """Get the tool's unique identifier.
         
         Returns:
             A string identifier for the tool (e.g., 'dynamodb', 'synthetic')
         """
-        pass
+        return self._name
     
     @property
-    @abstractmethod
     def description(self) -> str:
         """Get a human-readable description of the tool.
         
         Returns:
             A string describing what the tool does and its capabilities
         """
-        pass
+        return self._description
     
     @property
-    @abstractmethod
     def capabilities(self) -> Dict[str, Any]:
         """Get the tool's capabilities and requirements.
         
@@ -47,7 +49,7 @@ class MCPTool(ABC):
             A dictionary describing what the tool can do and what it needs
             to function (e.g., required parameters, supported data types)
         """
-        pass
+        return self._capabilities
     
     @abstractmethod
     def validate_rfd(self, rfd: Dict[str, Any]) -> bool:
@@ -62,7 +64,7 @@ class MCPTool(ABC):
         pass
     
     @abstractmethod
-    def generate_data(self, rfd: Dict[str, Any]) -> Dict[str, Any]:
+    def generate(self, rfd: Dict[str, Any], **kwargs) -> List[Dict[str, Any]]:
         """Generate or retrieve data according to the RFD.
         
         Args:

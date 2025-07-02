@@ -1,130 +1,59 @@
-"""MCP client implementation for data generation."""
+"""MCP client implementation for data generation using simple HTTP."""
 
 import os
 import logging
-from typing import Dict, Any, Optional, List, Type
-from pathlib import Path
+import httpx
+from typing import Dict, Any
 
-from .provider import MCPProvider
-from .tools.tool import MCPTool
+import mcp.types as types
 
 logger = logging.getLogger('MCPClient')
 
-class MCPClient(MCPProvider):
-    """MCP client for data generation"""
-    
-    def __init__(self, tools: Optional[List[Type[MCPTool]]] = None):
-        """Initialize MCP client
+class MCPClient:
+    """MCP client for calling remote data nodes via HTTP."""
+
+    def __init__(self):
+        """Initialize MCP client"""
+        self.timeout = int(os.getenv("MCP_CLIENT_TIMEOUT", "30"))
+
+    async def execute_rfd(self, rfd: Dict[str, Any], node_url: str) -> Dict[str, Any]:
+        """
+        Execute an RFD on a remote data node using a simple HTTP POST request.
         
         Args:
-            tools: List of MCP tool classes to register (optional)
-        """
-        super().__init__()
-        self._tools = {}
-        self._initialize_client(tools or [])
-    
-    def _initialize_client(self, tool_classes: List[Type[MCPTool]]):
-        """Initialize MCP client with tools
-        
-        Args:
-            tool_classes: List of MCP tool classes to register
-        """
-        try:
-            # Import MCP SDK
-            from mcp_sdk import MCPClient as SDKClient
+            rfd: The Request for Data
+            node_url: The URL of the target MCP server data node
             
-            # Get server configuration from environment
-            server_url = os.getenv("MCP_SERVER_URL")
-            if not server_url:
-                raise ValueError("MCP_SERVER_URL must be set in .env file")
+        Returns:
+            The dataset returned from the remote node
+        """
+        request_id = 1
+        json_rpc_payload = {
+            "jsonrpc": "2.0",
+            "method": "tools/call",
+            "params": {"name": "process_rfd", "arguments": rfd},
+            "id": request_id,
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                logger.info(f"Sending POST request to {node_url}")
+                response = await client.post(node_url, json=json_rpc_payload)
+                response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
                 
-            # Optional server configuration
-            server_config = {
-                "timeout": int(os.getenv("MCP_SERVER_TIMEOUT", "30")),
-                "retries": int(os.getenv("MCP_SERVER_RETRIES", "3")),
-                "api_key": os.getenv("MCP_SERVER_API_KEY"),
-                "verify_ssl": os.getenv("MCP_SERVER_VERIFY_SSL", "true").lower() == "true"
-            }
-            
-            # Initialize SDK client
-            self.client = SDKClient(server_url, **server_config)
-            
-            # Register tools
-            for tool_class in tool_classes:
-                tool = tool_class()
-                self._tools[tool.name] = tool
-                self.client.register_tool(tool)
-                logger.info(f"Registered MCP tool: {tool.name}")
-            
-            if not self._tools:
-                logger.warning("No MCP tools registered")
-            
-        except ImportError:
-            logger.error("MCP SDK not installed. Install with: pip install mcp-sdk")
+                response_data = response.json()
+                
+                if "error" in response_data:
+                    error = response_data["error"]
+                    logger.error(f"Received error from server: {error}")
+                    raise RuntimeError(f"MCP Error: {error.get('message', 'Unknown error')}")
+                    
+                logger.info(f"Successfully received result from {node_url}")
+                return response_data.get("result", {})
+
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP error occurred while calling {node_url}: {e.response.status_code} - {e.response.text}")
             raise
         except Exception as e:
-            logger.error(f"Failed to initialize MCP client: {e}")
-            raise
-    
-    def register_tool(self, tool: MCPTool):
-        """Register a new MCP tool
-        
-        Args:
-            tool: MCP tool instance to register
-        """
-        self._tools[tool.name] = tool
-        self.client.register_tool(tool)
-        logger.info(f"Registered MCP tool: {tool.name}")
-    
-    def get_tool(self, tool_name: str) -> Optional[MCPTool]:
-        """Get tool by name
-        
-        Args:
-            tool_name: Name of tool to get
-            
-        Returns:
-            Tool instance if found
-        """
-        return self._tools.get(tool_name)
-    
-    def list_tools(self) -> List[str]:
-        """List available tools
-        
-        Returns:
-            List of tool names
-        """
-        return list(self._tools.keys())
-    
-    def generate_dataset(self, rfd: Dict) -> Dict[str, Any]:
-        """Generate dataset using MCP tools
-        
-        Args:
-            rfd: Request for data
-            
-        Returns:
-            Generated dataset
-        """
-        try:
-            # Get tool from RFD or use default
-            tool_name = rfd.get("mcp_tool")
-            if not tool_name:
-                # Use first available tool if none specified
-                tool_name = next(iter(self._tools)) if self._tools else None
-                if not tool_name:
-                    raise ValueError("No MCP tools available")
-            
-            tool = self.get_tool(tool_name)
-            if not tool:
-                raise ValueError(f"MCP tool not found: {tool_name}")
-            
-            # Validate RFD
-            if not tool.validate_rfd(rfd):
-                raise ValueError(f"RFD not compatible with {tool_name} tool")
-            
-            # Generate data
-            records = tool.generate(rfd)
-            return {"data": records}
-            
-        except Exception as e:
-            logger.error(f"Failed to generate dataset: {e}")
+            logger.error(f"Failed to execute RFD on remote node {node_url}: {e}")
             raise 

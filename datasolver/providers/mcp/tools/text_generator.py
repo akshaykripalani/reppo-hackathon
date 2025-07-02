@@ -9,7 +9,19 @@ class TextGeneratorTool(MCPTool):
     def __init__(self):
         super().__init__(
             name="text_generator",
-            description="Generates text data based on templates and patterns"
+            description="Generates text data based on templates and patterns",
+            capabilities={
+                "supported_types": ["string"],
+                "features": [
+                    "template-based generation",
+                    "pattern matching",
+                    "context-aware generation"
+                ],
+                "constraints": {
+                    "max_length": 1000,
+                    "min_length": 1
+                }
+            }
         )
     
     def generate(self, rfd: Dict, **kwargs) -> List[Dict[str, Any]]:
@@ -57,25 +69,6 @@ class TextGeneratorTool(MCPTool):
             field_schema.get("type") == "string"
             for field_schema in properties.values()
         )
-    
-    def _get_capabilities(self) -> Dict[str, Any]:
-        """Get the tool's capabilities
-        
-        Returns:
-            Dict describing what the tool can do
-        """
-        return {
-            "supported_types": ["string"],
-            "features": [
-                "template-based generation",
-                "pattern matching",
-                "context-aware generation"
-            ],
-            "constraints": {
-                "max_length": 1000,
-                "min_length": 1
-            }
-        }
     
     def _generate_text(self, field_schema: Dict[str, Any]) -> str:
         """Generate text for a field based on its schema

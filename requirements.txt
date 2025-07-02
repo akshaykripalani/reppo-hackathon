@@ -25,3 +25,8 @@ click>=8.1.7
 # Testing
 pytest>=7.4.0
 pytest-mock>=3.11.1
+
+# Added from the code block
+watchdog
+mcp
+uvicorn

@@ -3,6 +3,7 @@
 import boto3
 from typing import Dict, Any, List, Optional
 from .tool import MCPTool
+import logging
 
 class DynamoDBTool(MCPTool):
     """MCP tool for DynamoDB operations"""
@@ -10,10 +11,32 @@ class DynamoDBTool(MCPTool):
     def __init__(self):
         super().__init__(
             name="dynamodb_tool",
-            description="Query and generate DynamoDB data"
+            description="Query and generate DynamoDB data",
+            capabilities={
+                "operations": [
+                    "query",
+                    "generate"
+                ],
+                "query_features": [
+                    "Key condition expressions",
+                    "Filter expressions",
+                    "Projection expressions",
+                    "Expression attribute values"
+                ],
+                "generation_features": [
+                    "DynamoDB-compatible data generation",
+                    "Schema validation",
+                    "Primary key generation"
+                ],
+                "constraints": {
+                    "max_item_size": 400 * 1024,
+                    "max_string_length": 1024
+                }
+            }
         )
         self.ddb = boto3.resource('dynamodb')
         self.client = boto3.client('dynamodb')
+        self.logger = logging.getLogger('DynamoDBTool')
     
     def generate(self, rfd: Dict, **kwargs) -> List[Dict[str, Any]]:
         """Query or generate DynamoDB data based on RFD
@@ -147,34 +170,6 @@ class DynamoDBTool(MCPTool):
             records.append(record)
         
         return records
-    
-    def _get_capabilities(self) -> Dict[str, Any]:
-        """Get the tool's capabilities
-        
-        Returns:
-            Dict describing what the tool can do
-        """
-        return {
-            "operations": [
-                "query",
-                "generate"
-            ],
-            "query_features": [
-                "Key condition expressions",
-                "Filter expressions",
-                "Projection expressions",
-                "Expression attribute values"
-            ],
-            "generation_features": [
-                "DynamoDB-compatible data generation",
-                "Schema validation",
-                "Primary key generation"
-            ],
-            "constraints": {
-                "max_item_size": 400 * 1024,
-                "max_string_length": 1024
-            }
-        }
     
     def _generate_dynamodb_value(self, field_schema: Dict[str, Any], index: int) -> Any:
         """Generate a DynamoDB-compatible value
