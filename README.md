@@ -40,26 +40,21 @@ python main.py          # starts on http://127.0.0.1:8000 using SSE transport
 ```
 You should see log output indicating that three sub-servers were launched and connected.
 
-### 3. Explore with MCP Inspector
-```bash
-mcp dev solver_server.py:mcp
-```
-This opens a browser UI where you can:
+### 3. Connect with MCP clients
 
+The orchestrator provides a local wrapper for standard MCP integration:
+
+```bash
+python local.py  # stdio wrapper that proxies to the orchestrator
+```
+
+This wrapper exposes three high-level tools:
 * `discover_mcp_servers` – list the worker PIDs and launch commands
-* `find_mcp_tools` – e.g. `{ "server_name": "sqlite_server" }`
-* `use_mcp_tool` – proxy a call:
-  ```jsonc
-  {
-    "tool_call": {
-      "server_name": "sqlite_server",
-      "tool_name": "query_nba_stats",
-      "arguments": {
-        "sql_query": "SELECT name, points FROM players WHERE points > 26;"
-      }
-    }
-  }
-  ```
+* `find_mcp_tools` – e.g. `{ "server_name": "sqlite_server" }`  
+* `use_mcp_tool` – proxy a call to any sub-server tool
+
+Configure your MCP client to launch `python local.py` and it will automatically
+proxy all requests to the running orchestrator service.
 
 ---
 
@@ -80,6 +75,12 @@ This opens a browser UI where you can:
 3. **Workers** (`sub_servers/…`)
    * Each is a tiny FastMCP server running over `stdio`
    * Demonstrate distinct capabilities and schemas
+
+4. **Local Wrapper** (`local.py`)
+    * Minimal FastMCP server running over `stdio` only
+    * Mirrors the orchestrator tools and proxies them via HTTP requests
+    * Ideal for integration with desktop applications that expect to spawn a
+      local MCP server process
 
 ---
 
