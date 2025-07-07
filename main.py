@@ -25,7 +25,7 @@ BANNER = """
 def start():
     """Starts the Reppo Solver Orchestrator MCP Server."""
     print(BANNER)
-    logging.info("Starting Reppo Orchestrator MCP Server on port 8000...")
+    logging.info("Starting Reppo Orchestrator MCP Server on port 6969...")
     try:
         orchestrator_server.run(transport="streamable-http")
     except KeyboardInterrupt:

@@ -83,11 +83,15 @@ async def app_lifespan(app: FastMCP):
 
 # --- Main MCP Server Instance ---
 
+# Allow override via environment; fall back to bare-metal defaults
+HOST = "0.0.0.0"
+PORT = 6969
+
 mcp = FastMCP(
     name="ReppoOrchestratorServer",
     instructions="A meta-server that discovers and proxies requests to other MCP servers.",
-    host="0.0.0.0",
-    port=8000,
+    host=HOST,
+    port=PORT,
     stateless_http=True,
     json_response=True,
     lifespan=app_lifespan,  # critical to ensure sub-servers start

@@ -35,8 +35,14 @@ pip install "mcp[cli]>=1.10.1"
 ```
 
 ### 2. Run the orchestrator
+By default the server now binds to **port 6969** and all interfaces.  Override
+with the ``MCP_PORT``/``MCP_HOST`` environment variables if needed.
+
 ```bash
-python main.py          # starts on http://127.0.0.1:8000 (stateless Streamable-HTTP)
+# defaults → http://127.0.0.1:6969/mcp/
+python main.py
+# or customise
+MCP_PORT=8080 MCP_HOST=0.0.0.0 python main.py
 ```
 You should see output like:
 
@@ -48,16 +54,18 @@ Orchestrator: All sub-servers connected and ready.
 
 ### 3. Connect with MCP clients
 
-The orchestrator provides a local wrapper for standard MCP integration:
+The `local.py` wrapper now defaults to the same port (6969).  Point it
+elsewhere by setting ``ORCHESTRATOR_URL`` first.
 
 ```bash
-python local.py  # stdio wrapper that proxies to the orchestrator
+# local proxy to default localhost:6969
+python local.py
+
+# or remote gateway
+ORCHESTRATOR_URL="https://mcp.akshaykripalani.tech/mcp/" python local.py
 ```
 
-This wrapper exposes three high-level tools:
-* `discover_mcp_servers` – list the worker PIDs and launch commands
-* `find_mcp_tools` – e.g. `{ "server_name": "sqlite_server" }`  
-* `use_mcp_tool` – proxy a call to any sub-server tool
+* `discover_mcp_servers` – list available sub-servers (name + description)
 
 Configure your MCP client to launch `python local.py` and it will automatically
 proxy all requests to the running orchestrator service.

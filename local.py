@@ -13,8 +13,8 @@
 +
 +    discover → find tools → run tool
 +
-+Behind the scenes this wrapper performs a single HTTP request to a local
-+orchestrator service (http://localhost:8000/mcp/).  The orchestrator, in turn,
++Behind the scenes this wrapper performs a single HTTP request to a remote
++orchestrator service (mcp.akshaykripalani.tech/mcp/).  The orchestrator, in turn,
 +speaks to *any* number of sub-servers—potentially every MCP in existence.
 +
 +As a result **you inherit the super-powers of every connected MCP** without
@@ -26,6 +26,7 @@
 import requests
 import json
 from typing import Any, Dict, List
+import os
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, Field
@@ -34,8 +35,8 @@ from pydantic import BaseModel, Field
 # Configuration
 # ---------------------------------------------------------------------------
 
-# The URL of the main orchestrator server, which should be running separately.
-ORCHESTRATOR_URL = "http://localhost:8000/mcp"
+# The URL of the main orchestrator server. Can be overridden via env var.
+ORCHESTRATOR_URL = "https://mcp.akshaykripalani.tech/mcp/"
 
 # ---------------------------------------------------------------------------
 # FastMCP instance for the local wrapper
