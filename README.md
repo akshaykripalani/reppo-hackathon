@@ -6,7 +6,6 @@ A **self-contained local demonstration** of an _MCP Orchestrator_ that aggregate
 2. Inspect the tools each sub-server offers  
 3. Proxy a call to any of those tools — all through a single endpoint
 
-No blockchain, IPFS, or other production complexity — just pure MCP over `stdio` / `sse` for easy local experimentation.
 
 ---
 
@@ -14,6 +13,7 @@ No blockchain, IPFS, or other production complexity — just pure MCP over `stdi
 
 ```text
 solver-node/
+├── local.py             # THIS IS WHAT THE USER HAS TO USE, EVERYTHING BEYOND IS PURE TECHNICALS
 ├── main.py              # Entry point – starts the orchestrator FastMCP server
 ├── solver_server.py     # Orchestrator implementation & lifespan manager
 ├── manifest.json        # Declares sub-servers to launch (command + args)
@@ -28,48 +28,28 @@ solver-node/
 ---
 
 ## Quick Start
+### Note: The Remote MCPs in this server have already been hosted at https://mcp.akshaykripalani.tech/mcp/
+### Feel free to use those rather than running any of these locally! (except local.py, which you will have to)
 
 ### 1. Install dependency
 ```bash
-pip install "mcp[cli]>=1.10.1"
+pip install "mcp[cli]"
 ```
 
-### 2. Run the orchestrator
-By default the server now binds to **port 6969** and all interfaces.  Override
-with the ``MCP_PORT``/``MCP_HOST`` environment variables if needed.
+### 2. Add to Claude Desktop!
+"giga-mcp": {
+      "type": "mcp",
+      "command": "C:\\Akshay\\Projects\\solver-node\\.venv\\Scripts\\python.exe",
+      "args": [
+        "/path/to/local.py"
+      ]
+    }
 
-```bash
-# defaults → http://127.0.0.1:6969/mcp/
-python main.py
-# or customise
-MCP_PORT=8080 MCP_HOST=0.0.0.0 python main.py
-```
-You should see output like:
 
-```
-Orchestrator: Starting sub-servers...
-Orchestrator: Launching 'adder_server' with command: ... python.exe sub_servers/adder_server.py
-Orchestrator: All sub-servers connected and ready.
-```
-
-### 3. Connect with MCP clients
-
-The `local.py` wrapper now defaults to the same port (6969).  Point it
-elsewhere by setting ``ORCHESTRATOR_URL`` first.
-
-```bash
-# local proxy to default localhost:6969
-python local.py
-
-# or remote gateway
-ORCHESTRATOR_URL="https://mcp.akshaykripalani.tech/mcp/" python local.py
-```
-
-* `discover_mcp_servers` – list available sub-servers (name + description)
-
-Configure your MCP client to launch `python local.py` and it will automatically
-proxy all requests to the running orchestrator service.
-
+### Should you wish to self host it all yourself
+### 1. Install dependencies using uv
+### 2. Run main.py in a separate terminal window
+### 3. Use claude desktop as normal
 ---
 
 ## How It Works
