@@ -47,9 +47,9 @@ pip install "mcp[cli]"
 
 
 ### Should you wish to self host it all yourself
-### 1. Install dependencies using uv
-### 2. Run main.py in a separate terminal window
-### 3. Use claude desktop as normal
+1. Install dependencies using uv
+2. Run main.py in a separate terminal window
+3. Use claude desktop as normal
 ---
 
 ## How It Works
