@@ -1,7 +1,7 @@
 import random
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP(name="RandomServer")
+mcp = FastMCP(name="random_server")
 
 
 @mcp.tool()

@@ -36,9 +36,15 @@ pip install "mcp[cli]>=1.10.1"
 
 ### 2. Run the orchestrator
 ```bash
-python main.py          # starts on http://127.0.0.1:8000 using SSE transport
+python main.py          # starts on http://127.0.0.1:8000 (stateless Streamable-HTTP)
 ```
-You should see log output indicating that three sub-servers were launched and connected.
+You should see output like:
+
+```
+Orchestrator: Starting sub-servers...
+Orchestrator: Launching 'adder_server' with command: ... python.exe sub_servers/adder_server.py
+Orchestrator: All sub-servers connected and ready.
+```
 
 ### 3. Connect with MCP clients
 
@@ -77,10 +83,9 @@ proxy all requests to the running orchestrator service.
    * Demonstrate distinct capabilities and schemas
 
 4. **Local Wrapper** (`local.py`)
-    * Minimal FastMCP server running over `stdio` only
-    * Mirrors the orchestrator tools and proxies them via HTTP requests
-    * Ideal for integration with desktop applications that expect to spawn a
-      local MCP server process
+    * Tiny FastMCP server running over `stdio`
+    * Mirrors the orchestrator tools and proxies them to `http://localhost:8000/mcp/`
+    * Perfect for desktop apps (e.g. Claude Desktop) that launch a local process but don't embed HTTP logic
 
 ---
 

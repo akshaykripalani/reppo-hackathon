@@ -1,6 +1,7 @@
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP(name="AdderServer")
+# Use snake_case name to match manifest & orchestrator expectations
+mcp = FastMCP(name="adder_server")
 
 
 @mcp.tool()

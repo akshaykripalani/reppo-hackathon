@@ -1,14 +1,17 @@
 {
   "adder_server": {
     "command": "python",
-    "args": ["sub_servers/adder_server.py"]
+    "args": ["sub_servers/adder_server.py"],
+    "description": "Adds two integers and returns the sum via the 'add' tool."
   },
   "random_server": {
     "command": "python",
-    "args": ["sub_servers/random_server.py"]
+    "args": ["sub_servers/random_server.py"],
+    "description": "Generates random integers between given bounds."
   },
   "sqlite_server": {
     "command": "python",
-    "args": ["sub_servers/sqlite_server.py"]
+    "args": ["sub_servers/sqlite_server.py"],
+    "description": "Queries an SQLite database of NBA player points."
   }
 } 

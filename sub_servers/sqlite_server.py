@@ -1,39 +1,57 @@
 import sqlite3
 import json
+from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
-# --- Database Setup ---
-DB_NAME = ":memory:"  # Use an in-memory database for this demo
+# ---------------------------------------------------------------------------
+# Database Setup – persist to a local file so the table survives new
+# connections and (optionally) multiple orchestrator lifespans.
+# ---------------------------------------------------------------------------
+
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "nba_players.db"
 
 
-def setup_database():
-    """Creates and populates the SQLite database."""
-    conn = sqlite3.connect(DB_NAME)
+def setup_database() -> None:
+    """Create the database file (if absent) and populate it with demo data."""
+    init_required = not DB_PATH.exists()
+
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("DROP TABLE IF EXISTS players")
-    cursor.execute(
-        """
-        CREATE TABLE players (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            points REAL NOT NULL
+
+    if init_required:
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS players (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                points REAL NOT NULL
+            )
+            """
         )
-        """
-    )
-    players_data = [
-        ("LeBron James", 27.1),
-        ("Michael Jordan", 30.1),
-        ("Kobe Bryant", 25.0),
-        ("Stephen Curry", 24.3),
-        ("Kevin Durant", 27.0),
-    ]
-    cursor.executemany("INSERT INTO players (name, points) VALUES (?, ?)", players_data)
+
+        players_data = [
+            ("LeBron James", 27.1),
+            ("Michael Jordan", 30.1),
+            ("Kobe Bryant", 25.0),
+            ("Stephen Curry", 24.3),
+            ("Kevin Durant", 27.0),
+        ]
+
+        # Only populate if table is empty
+        cursor.execute("SELECT COUNT(*) FROM players")
+        count = cursor.fetchone()[0]
+        if count == 0:
+            cursor.executemany(
+                "INSERT INTO players (name, points) VALUES (?, ?)", players_data
+            )
+
     conn.commit()
     conn.close()
 
 
 # --- MCP Server ---
-mcp = FastMCP(name="SQLiteServer")
+mcp = FastMCP(name="sqlite_server")
 
 
 @mcp.tool()
@@ -43,7 +61,7 @@ def query_nba_stats(sql_query: str) -> str:
     The table is named 'players' with columns 'name' (TEXT) and 'points' (REAL).
     Example query: 'SELECT * FROM players WHERE points > 25;'
     """
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # Allows accessing columns by name
     cursor = conn.cursor()
     try:
