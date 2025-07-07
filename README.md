@@ -38,12 +38,10 @@ pip install "mcp[cli]"
 
 ### 2. Add to Claude Desktop!
 "giga-mcp": {
-      "type": "mcp",
-      "command": "C:\\Akshay\\Projects\\solver-node\\.venv\\Scripts\\python.exe",
-      "args": [
-        "/path/to/local.py"
-      ]
-    }
+    "type": "mcp",  
+    "command": "/path/to/python.exe",
+    "args": ["/path/to/local.py"]
+}
 
 
 ### Should you wish to self host it all yourself
