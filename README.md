@@ -33,15 +33,18 @@ solver-node/
 
 ### 1. Install dependency
 ```bash
-pip install "mcp[cli]"
+uv add "mcp[cli]"
+uv add requests
 ```
 
 ### 2. Add to Claude Desktop!
+```
 "giga-mcp": {
     "type": "mcp",  
     "command": "/path/to/python.exe",
     "args": ["/path/to/local.py"]
 }
+```
 
 
 ### Should you wish to self host it all yourself
@@ -51,6 +54,50 @@ pip install "mcp[cli]"
 ---
 
 ## How It Works
+
+### Layout diagram
+
+```
++-----------------+      (Runs & communicates      +------------------------------------------+
+|                 |         via stdio)             |                                          |
+|  Claude Client  | <============================> |  local.py (LocalReppoWrapper)            |
+|                 |                                |  - A stdio MCP server for the client     |
++-----------------+                                |  - Proxies calls to the orchestrator     |
+                                                   +------------------------------------------+
+                                                                         |
+                                                                         | (HTTP/S Request)
+                                                                         | ORCHESTRATOR_URL=https://mcp.akshaykripalani.tech/mcp/
+                                                                         |
+                                                                        _V_
++------------------------------------------------------------------------------------------------------+
+|                                                                                                      |
+|   Giga-MCP Orchestrator (solver_server.py)                                                           |
+|   - Listens on HTTP, manages sub-server lifecycle.                                                   |
+|   - Uses ClientSessionGroup to talk to sub-servers.                                                  |
+|                                                                                                      |
+|   +-------------------+       (Reads on startup)       +-----------------------------------------+   |
+|   |   manifest.json   | -----------------------------> | Lifespan Manager (launches sub-servers) |   |
+|   | - adder_server    |                                +-----------------------------------------+   |
+|   | - random_server   |                                                  |                           |
+|   | - sqlite_server   |                                                  | (Launches & Manages via   |
+|   +-------------------+                                                  |  subprocess & stdio)      |
+|                                                                          |                           |
+|      (Proxies tool calls via stdio pipes)                                V                           |
+|    .----------------------------------------------------------------------|---------------.          |
+|    |                          |                             |                             |          |
+|   _V_                        _V_                           _V_                           _V_         |
++----+--------------------------+-----------------------------+-----------------------------+----------+
+     |                          |                             |                             |
+(stdio pipe)               (stdio pipe)                  (stdio pipe)                  (reads from)
+     |                          |                             |                             |
++----V-------------+ +----------V-----------+ +---------------V----------+ +------------------+
+| adder_server.py  | |   random_server.py   | |    sqlite_server.py      | | nba_players.db   |
+| - tool: add()    | | - tool: generate...()| | - tool: query_nba_stats()| | (SQLite Database)|
++------------------+ +----------------------+ +--------------------------+ +------------------+
+                                                             |                      |
+                                                             '----------------------'
+```
+
 
 1. **Lifespan Manager** (`app_lifespan` in `solver_server.py`)
    * Reads `manifest.json`
