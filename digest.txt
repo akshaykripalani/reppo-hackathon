@@ -1,0 +1,849 @@
+Directory structure:
+└── solver-node/
+    ├── README.md
+    ├── LICENSE
+    ├── local.py
+    ├── main.py
+    ├── manifest.json
+    ├── mcp-server-giga-mcp.log.txt
+    ├── pyproject.toml
+    ├── solver_server.py
+    ├── .python-version
+    └── sub_servers/
+        ├── __init__.py
+        ├── adder_server.py
+        ├── random_server.py
+        └── sqlite_server.py
+
+================================================
+File: README.md
+================================================
+# Giga-MCP Demo: MCP Orchestrator ðŸ§©
+
+A **self-contained local demonstration** of an _MCP Orchestrator_ that aggregates the capabilities of several small worker MCP servers.  The orchestrator exposes three high-level tools that let any MCP client:
+
+1. Discover which sub-servers are running  
+2. Inspect the tools each sub-server offers  
+3. Proxy a call to any of those tools â€” all through a single endpoint
+
+No blockchain, IPFS, or other production complexity â€” just pure MCP over `stdio` / `sse` for easy local experimentation.
+
+---
+
+## Project Structure
+
+```text
+solver-node/
+â”œâ”€â”€ main.py              # Entry point â€“ starts the orchestrator FastMCP server
+â”œâ”€â”€ solver_server.py     # Orchestrator implementation & lifespan manager
+â”œâ”€â”€ manifest.json        # Declares sub-servers to launch (command + args)
+â”œâ”€â”€ pyproject.toml       # Minimal dependencies (only mcp[cli])
+â””â”€â”€ sub_servers/
+    â”œâ”€â”€ __init__.py
+    â”œâ”€â”€ adder_server.py      # add(a, b)
+    â”œâ”€â”€ random_server.py     # generate_random(min, max)
+    â””â”€â”€ sqlite_server.py     # query_nba_stats(sql_query)
+```
+
+---
+
+## Quick Start
+
+### 1. Install dependency
+```bash
+pip install "mcp[cli]>=1.10.1"
+```
+
+### 2. Run the orchestrator
+```bash
+python main.py          # starts on http://127.0.0.1:8000 using SSE transport
+```
+You should see log output indicating that three sub-servers were launched and connected.
+
+### 3. Connect with MCP clients
+
+The orchestrator provides a local wrapper for standard MCP integration:
+
+```bash
+python local.py  # stdio wrapper that proxies to the orchestrator
+```
+
+This wrapper exposes three high-level tools:
+* `discover_mcp_servers` â€“ list the worker PIDs and launch commands
+* `find_mcp_tools` â€“ e.g. `{ "server_name": "sqlite_server" }`  
+* `use_mcp_tool` â€“ proxy a call to any sub-server tool
+
+Configure your MCP client to launch `python local.py` and it will automatically
+proxy all requests to the running orchestrator service.
+
+---
+
+## How It Works
+
+1. **Lifespan Manager** (`app_lifespan` in `solver_server.py`)
+   * Reads `manifest.json`
+   * `subprocess.Popen` launches each worker with `stdin/stdout` pipes
+   * `ClientSessionGroup` connects to each process using `StdioServerParameters`
+   * A `name_hook` prefixes every imported tool with `<ServerName>::` to avoid name collisions
+   * On shutdown (Ctrl-C) all child processes are terminated cleanly
+
+2. **Orchestrator Tools**
+   * `discover_mcp_servers`  â†’ `List[ServerInfo]`
+   * `find_mcp_tools`        â†’ `List[ToolInfo]`
+   * `use_mcp_tool`          â†’ proxied result of any worker tool
+
+3. **Workers** (`sub_servers/â€¦`)
+   * Each is a tiny FastMCP server running over `stdio`
+   * Demonstrate distinct capabilities and schemas
+
+4. **Local Wrapper** (`local.py`)
+    * Minimal FastMCP server running over `stdio` only
+    * Mirrors the orchestrator tools and proxies them via HTTP requests
+    * Ideal for integration with desktop applications that expect to spawn a
+      local MCP server process
+
+---
+
+## Extending the Demo
+
+* **Add a new worker**  
+  1. Create `sub_servers/my_server.py` with a FastMCP instance & tool(s)  
+  2. Add an entry to `manifest.json`  
+  3. Restart the orchestrator â€“ no other code changes required.
+
+* **Swap transport**  
+  Change `transport="sse"` in `main.py` to `http` or `websocket` if preferred.
+
+* **Deploy remotely**  
+  Because each worker is launched via `manifest.json`, you could point to remote TCP servers instead of local processes by switching to `HttpServerParameters` / `WebSocketServerParameters`.
+
+---
+
+## License
+
+Distributed under the **MIT License**.  See [`LICENSE`](LICENSE) for full text.
+
+
+
+================================================
+File: LICENSE
+================================================
+MIT License
+
+Copyright (c) 2025 GigaMCP Demo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+
+================================================
+File: local.py
+================================================
+"""
+MCP Local Wrapper for Claude Desktop Integration.
+
+This script acts as a thin, stateless proxy server that runs locally. Its sole
+purpose is to be launched as a `stdio`-based process by an external MCP client
+like Claude Desktop.
+
+It exposes a set of high-level tools that mirror the capabilities of a remote
+orchestrator service. When one of its tools is called, this wrapper makes a
+standard, one-off HTTP POST request to the main orchestrator server, forwards the
+arguments, and returns the result.
+
+This architecture solves two key problems:
+1.  It provides a stable, launchable process for clients like Claude Desktop that
+    expect to manage a server's lifecycle.
+2.  It decouples the main application logic (the orchestrator) from the
+    client-facing integration point, allowing the main service to be hosted
+    anywhere and communicate via standard HTTP.
+"""
+
+import requests
+import json
+from typing import Any, Dict, List
+
+from mcp.server.fastmcp import FastMCP
+from pydantic import BaseModel, Field
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# The URL of the main orchestrator server, which should be running separately.
+ORCHESTRATOR_URL = "http://localhost:8000/mcp"
+
+# ---------------------------------------------------------------------------
+# FastMCP instance for the local wrapper
+# ---------------------------------------------------------------------------
+
+mcp = FastMCP(
+    name="LocalReppoWrapper",
+    instructions="A local wrapper that proxies MCP tool calls to the main Reppo Orchestrator service.",
+)
+
+# ---------------------------------------------------------------------------
+# Pydantic Schemas for the Wrapper's Tool Inputs
+# ---------------------------------------------------------------------------
+
+class FindToolsInput(BaseModel):
+    """Input model for the find_mcp_tools tool."""
+    server_name: str = Field(..., description="Name of the target sub-server (e.g., 'sqlite_server').")
+
+class UseToolInput(BaseModel):
+    """Input model for the use_mcp_tool tool."""
+    server_name: str = Field(..., description="Target sub-server name.")
+    tool_name: str = Field(..., description="Tool to execute on the sub-server.")
+    arguments: dict = Field(default_factory=dict, description="Arguments for the tool.")
+
+# ---------------------------------------------------------------------------
+# Internal Helper for Calling the Orchestrator
+# ---------------------------------------------------------------------------
+
+def _call_orchestrator(method: str, params: Dict[str, Any]) -> Any:
+    """
+    Sends a JSON-RPC 2.0 request and returns the 'result' field.
+
+    This function is the core of the proxy logic. It constructs a valid MCP
+    request and handles the HTTP communication.
+
+    Args:
+        method: The JSON-RPC method to call (e.g., "tools/call").
+        params: The parameters for the JSON-RPC method.
+
+    Returns:
+        The "result" field from the orchestrator's JSON-RPC response.
+
+    Raises:
+        RuntimeError: If the HTTP request fails or the orchestrator returns an error.
+    """
+    payload = {"jsonrpc": "2.0", "id": "local-wrapper-request", "method": method, "params": params}
+    
+    # This header is crucial. It tells the orchestrator that this client can
+    # handle both JSON and SSE, which satisfies the StreamableHTTP transport's
+    # compliance check.
+    headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    
+    try:
+        response = requests.post(ORCHESTRATOR_URL, headers=headers, json=payload, timeout=60)
+        response.raise_for_status()
+        data = response.json()
+    except requests.exceptions.RequestException as exc:
+        raise RuntimeError(f"Failed to communicate with orchestrator at {ORCHESTRATOR_URL}: {exc}") from exc
+
+    if "error" in data:
+        raise RuntimeError(f"Orchestrator error: {json.dumps(data['error'])}")
+
+    return data.get("result")
+
+# ---------------------------------------------------------------------------
+# Tool Implementations: The Public API of the Wrapper
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+def discover_mcp_servers() -> List[Dict[str, Any]]:
+    """
+    Discovers the available sub-servers managed by the main orchestrator.
+    This tool takes no arguments. It acts as a proxy to the orchestrator's
+    `discover_mcp_servers` tool.
+
+    Returns:
+        A list of objects, each describing a configured sub-server, its process ID,
+        and its launch command.
+    """
+    result = _call_orchestrator(
+        method="tools/call",
+        params={"name": "discover_mcp_servers", "arguments": {}},
+    )
+    # The orchestrator's tool returns structured content which we pass through.
+    return result["structuredContent"]["result"]
+
+@mcp.tool()
+def find_mcp_tools(input_data: FindToolsInput) -> List[Dict[str, Any]]:
+    """
+    Finds all available tools for a specific managed MCP sub-server.
+    This acts as a proxy to the orchestrator's `find_mcp_tools` tool.
+
+    Args:
+        input_data: An object containing the `server_name` to inspect.
+
+    Returns:
+        A list of objects, each describing a tool available on the target sub-server.
+    """
+    result = _call_orchestrator(
+        method="tools/call",
+        params={"name": "find_mcp_tools", "arguments": input_data.model_dump()},
+    )
+    return result["structuredContent"]["result"]
+
+@mcp.tool()
+def use_mcp_tool(input_data: UseToolInput) -> Any:
+    """
+    Executes a tool on a specific sub-server by proxying the request through the orchestrator.
+    This is the main entry point for using the capabilities of the underlying worker servers.
+
+    Args:
+        input_data: An object specifying the `server_name`, `tool_name`, and the `arguments` for the target tool.
+
+    Returns:
+        The direct result from the executed sub-server tool, passed through by the orchestrator.
+    """
+    result = _call_orchestrator(
+        method="tools/call",
+        params={
+            "name": "use_mcp_tool",
+            "arguments": {"tool_call": input_data.model_dump()},
+        },
+    )
+    return result["structuredContent"]
+
+if __name__ == "__main__":
+    # When run directly, this script starts an MCP server over stdio.
+    # This is how Claude Desktop will execute it.
+    mcp.run(transport="stdio")
+
+
+================================================
+File: main.py
+================================================
+# main.py
+"""Main entry point for the solver node."""
+
+import click
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Import the mcp instance from our server file
+from solver_server import mcp as orchestrator_server
+BANNER = """
+ ██████╗ ██╗ ██████╗  █████╗ ███╗   ███╗ ██████╗██████╗ 
+██╔════╝ ██║██╔════╝ ██╔══██╗████╗ ████║██╔════╝██╔══██╗
+██║  ███╗██║██║  ███╗███████║██╔████╔██║██║     ██████╔╝
+██║   ██║██║██║   ██║██╔══██║██║╚██╔╝██║██║     ██╔═══╝ 
+╚██████╔╝██║╚██████╔╝██║  ██║██║ ╚═╝ ██║╚██████╗██║     
+ ╚═════╝ ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝╚═╝     
+"""
+
+@click.command()
+def start():
+    """Starts the Reppo Solver Orchestrator MCP Server."""
+    print(BANNER)
+    logging.info("Starting Reppo Orchestrator MCP Server on port 8000...")
+    try:
+        orchestrator_server.run(transport="streamable-http")
+    except KeyboardInterrupt:
+        logging.info("Server stopped by user.")
+    except Exception as e:
+        logging.error(f"Server failed to start: {e}", exc_info=True)
+
+
+if __name__ == '__main__':
+    start()
+
+
+================================================
+File: manifest.json
+================================================
+{
+  "adder_server": {
+    "command": "python",
+    "args": ["sub_servers/adder_server.py"]
+  },
+  "random_server": {
+    "command": "python",
+    "args": ["sub_servers/random_server.py"]
+  },
+  "sqlite_server": {
+    "command": "python",
+    "args": ["sub_servers/sqlite_server.py"]
+  }
+} 
+
+
+================================================
+File: mcp-server-giga-mcp.log.txt
+================================================
+2025-07-06T22:54:28.607Z [giga-mcp] [info] Shutting down server... { metadata: undefined }
+2025-07-06T22:57:32.796Z [giga-mcp] [info] Initializing server... { metadata: undefined }
+2025-07-06T22:57:32.831Z [giga-mcp] [info] Using MCP server command: C:\Users\aksha\.local\bin\uv.exe with args and path: {
+  metadata: {
+    args: [
+      '--directory',
+      'C:\\Akshay\\Projects\\solver-node',
+      'run',
+      'local.py',
+      [length]: 4
+    ],
+    paths: [
+      'C:\\Program Files\\nodejs',
+      'C:\\Program Files\\ImageMagick-7.1.1-Q16-HDRI',
+      'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin',
+      'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\libnvvp',
+      'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\bin',
+      'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\libnvvp',
+      'C:\\Program Files\\Common Files\\Oracle\\Java\\javapath',
+      'C:\\Windows\\system32',
+      'C:\\Windows',
+      'C:\\Windows\\System32\\Wbem',
+      'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\',
+      'C:\\Windows\\System32\\OpenSSH\\',
+      'C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common',
+      'C:\\Program Files\\Git\\cmd',
+      'c:\\Users\\aksha\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin',
+      'C:\\Program Files (x86)\\cloudflared\\',
+      'C:\\Program Files\\Docker\\Docker\\resources\\bin',
+      'C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2022.3.0\\',
+      'C:\\WINDOWS\\system32',
+      'C:\\WINDOWS',
+      'C:\\WINDOWS\\System32\\Wbem',
+      'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\',
+      'C:\\WINDOWS\\System32\\OpenSSH\\',
+      'C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2024.3.0\\',
+      'C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR',
+      'C:\\Program Files\\nodejs\\',
+      'C:\\Program Files\\Cloudflare\\Cloudflare WARP\\',
+      'C:\\Program Files\\Go\\bin',
+      'C:\\Program Files\\Tailscale\\',
+      'C:\\Users\\aksha\\.cargo\\bin',
+      'C:\\Users\\aksha\\.local\\bin',
+      'C:\\Users\\aksha\\AppData\\Local\\Programs\\oh-my-posh\\bin\\',
+      'C:\\Users\\aksha\\.pyenv\\pyenv-win\\bin',
+      'C:\\Users\\aksha\\.pyenv\\pyenv-win\\shims',
+      'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WindowsApps',
+      'C:\\Users\\aksha\\AppData\\Local\\Programs\\Microsoft VS Code\\bin',
+      'C:\\Users\\aksha\\AppData\\Local\\GitHubDesktop\\bin',
+      'C:\\mingw64\\bin',
+      'C:\\Scripts',
+      'C:\\Program Files\\cursor-id-modifier',
+      'C:\\Users\\aksha\\Downloads\\Render CLI',
+      'C:\\Program Files\\ffmpeg\\bin',
+      'C:\\Users\\aksha\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\',
+      'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WindowsApps',
+      'C:\\Users\\aksha\\AppData\\Roaming\\npm',
+      'C:\\Users\\aksha\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin',
+      'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Fastfetch-cli.Fastfetch_Microsoft.Winget.Source_8wekyb3d8bbwe',
+      'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WinGet\\Packages\\GNU.Nano_Microsoft.Winget.Source_8wekyb3d8bbwe',
+      'C:\\Scripts\\gifsicle',
+      '',
+      'C:\\Users\\aksha\\.bun\\bin',
+      'C:\\Users\\aksha\\go\\bin',
+      [length]: 52
+    ]
+  }
+} %o
+2025-07-06T22:57:32.836Z [giga-mcp] [info] Server started and connected successfully { metadata: undefined }
+2025-07-06T22:57:32.839Z [giga-mcp] [info] Message from client: {"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"claude-ai","version":"0.1.0"}},"jsonrpc":"2.0","id":0} { metadata: undefined }
+   Building solver-node-demo @ file:///C:/Akshay/Projects/solver-node
+  Ã— Failed to build `solver-node-demo @ file:///C:/Akshay/Projects/solver-node`
+  â”œâ”€â–¶ The build backend returned an error
+  â•°â”€â–¶ Call to `hatchling.build.build_editable` failed (exit code: 1)
+
+      [stderr]
+      Traceback (most recent call last):
+        File "<string>", line 11, in <module>
+        File
+      "C:\Users\aksha\AppData\Local\uv\cache\builds-v0\.tmpiGtgS0\Lib\site-packages\hatchling\build.py",
+      line 83, in build_editable
+          return os.path.basename(next(builder.build(directory=wheel_directory,
+      versions=['editable'])))
+      
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File
+      "C:\Users\aksha\AppData\Local\uv\cache\builds-v0\.tmpiGtgS0\Lib\site-packages\hatchling\builders\plugin\interface.py",
+      line 155, in build
+          artifact = version_api[version](directory, **build_data)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File
+      "C:\Users\aksha\AppData\Local\uv\cache\builds-v0\.tmpiGtgS0\Lib\site-packages\hatchling\builders\wheel.py",
+      line 496, in build_editable
+          return self.build_editable_detection(directory, **build_data)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File
+      "C:\Users\aksha\AppData\Local\uv\cache\builds-v0\.tmpiGtgS0\Lib\site-packages\hatchling\builders\wheel.py",
+      line 507, in build_editable_detection
+          for included_file in self.recurse_selected_project_files():
+        File
+      "C:\Users\aksha\AppData\Local\uv\cache\builds-v0\.tmpiGtgS0\Lib\site-packages\hatchling\builders\plugin\interface.py",
+      line 180, in recurse_selected_project_files
+          if self.config.only_include:
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\aksha\.pyenv\pyenv-win\versions\3.11.8\Lib\functools.py",
+      line 1001, in __get__
+          val = self.func(instance)
+                ^^^^^^^^^^^^^^^^^^^
+        File
+      "C:\Users\aksha\AppData\Local\uv\cache\builds-v0\.tmpiGtgS0\Lib\site-packages\hatchling\builders\config.py",
+      line 713, in only_include
+          only_include = only_include_config.get('only-include',
+      self.default_only_include()) or self.packages
+      
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File
+      "C:\Users\aksha\AppData\Local\uv\cache\builds-v0\.tmpiGtgS0\Lib\site-packages\hatchling\builders\wheel.py",
+      line 262, in default_only_include
+          return self.default_file_selection_options.only_include
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\aksha\.pyenv\pyenv-win\versions\3.11.8\Lib\functools.py",
+      line 1001, in __get__
+          val = self.func(instance)
+                ^^^^^^^^^^^^^^^^^^^
+        File
+      "C:\Users\aksha\AppData\Local\uv\cache\builds-v0\.tmpiGtgS0\Lib\site-packages\hatchling\builders\wheel.py",
+      line 250, in default_file_selection_options
+          raise ValueError(message)
+      ValueError: Unable to determine which files to ship
+      inside the wheel using the following heuristics:
+      https://hatch.pypa.io/latest/plugins/builder/wheel/#default-file-selection
+
+      The most likely cause of this is that there is no directory that matches
+      the name of your project (solver_node_demo).
+
+      At least one file selection option must be defined
+      in the `tool.hatch.build.targets.wheel` table, see:
+      https://hatch.pypa.io/latest/config/build/
+
+      As an example, if you intend to ship a directory named `foo` that
+      resides within a `src` directory located at the root of your project,
+      you can define the following:
+
+      [tool.hatch.build.targets.wheel]
+      packages = ["src/foo"]
+
+      hint: This usually indicates a problem with the package or the build
+      environment.
+2025-07-06T22:57:33.898Z [giga-mcp] [info] Server transport closed { metadata: undefined }
+2025-07-06T22:57:33.898Z [giga-mcp] [info] Client transport closed { metadata: undefined }
+2025-07-06T22:57:33.899Z [giga-mcp] [info] Server transport closed unexpectedly, this is likely due to the process exiting early. If you are developing this MCP server you can add output to stderr (i.e. `console.error('...')` in JavaScript, `print('...', file=sys.stderr)` in python) and it will appear in this log. { metadata: undefined }
+2025-07-06T22:57:33.899Z [giga-mcp] [error] Server disconnected. For troubleshooting guidance, please visit our [debugging documentation](https://modelcontextprotocol.io/docs/tools/debugging) { metadata: { context: 'connection', stack: undefined } }
+2025-07-06T22:57:33.899Z [giga-mcp] [info] Client transport closed { metadata: undefined }
+
+
+
+================================================
+File: pyproject.toml
+================================================
+[project]
+name = "solver-node-demo"
+version = "0.1.0"
+description = "A local demo of an MCP orchestrator server."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.10.1",
+    "requests>=2.31.0"
+]
+
+[project.scripts]
+solver-node = "main:start"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+
+================================================
+File: solver_server.py
+================================================
+import subprocess
+import json
+from contextlib import asynccontextmanager
+from typing import Any, Dict, List, Optional
+from pathlib import Path
+
+from mcp.server.fastmcp import FastMCP, Context
+from mcp.client.session_group import ClientSessionGroup
+from mcp.client.stdio import StdioServerParameters
+from mcp.types import Implementation as MCPImplementation
+from pydantic import BaseModel, Field
+
+# --- Pydantic Models for our new tools' inputs/outputs ---
+
+class ServerInfo(BaseModel):
+    name: str
+    pid: Optional[int] = None
+    command: List[str]
+
+class ToolInfo(BaseModel):
+    name: str
+    description: Optional[str]
+    input_schema: Dict[str, Any]
+
+class UseToolInput(BaseModel):
+    server_name: str = Field(description="The name of the target MCP server (e.g., 'sqlite_server').")
+    tool_name: str = Field(description="The name of the tool to execute on that server (e.g., 'query_nba_stats').")
+    arguments: Dict[str, Any] = Field(description="A JSON object of arguments for the tool.")
+
+# --- Application Context ---
+
+class AppContext(BaseModel):
+    session_group: ClientSessionGroup
+    sub_processes: Dict[str, subprocess.Popen]
+    server_configs: Dict[str, Dict[str, Any]]
+
+    class Config:
+        arbitrary_types_allowed = True
+
+# --- Main MCP Server Instance ---
+
+mcp = FastMCP(
+    name="ReppoOrchestratorServer",
+    instructions="A meta-server that discovers and proxies requests to other MCP servers.",
+    host="127.0.0.1",
+    port=8000,
+    stateless_http=True,
+    json_response=True,
+)
+
+# --- Lifespan Management ---
+
+@asynccontextmanager
+async def app_lifespan(server: FastMCP):
+    print("Orchestrator: Starting sub-servers...")
+
+    sub_processes: Dict[str, subprocess.Popen] = {}
+    server_params: List[StdioServerParameters] = []
+
+    config_path = Path("manifest.json")
+    server_configs = json.loads(config_path.read_text()) if config_path.exists() else {}
+
+    for name, config in server_configs.items():
+        command = [config["command"]] + config["args"]
+        print(f"Orchestrator: Launching '{name}' with command: {' '.join(command)}")
+        # We use Popen to run the sub-server as a background process
+        # We pipe stdin and stdout to communicate with it via MCP's stdio transport
+        proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        sub_processes[name] = proc
+        server_params.append(StdioServerParameters(**config))
+
+    # Prefix component names with server name to avoid collisions
+    def name_hook(component_name: str, server_info: MCPImplementation) -> str:
+        return f"{server_info.name}::{component_name}"
+
+    session_group = ClientSessionGroup(component_name_hook=name_hook)
+
+    app_context = AppContext(session_group=session_group, sub_processes=sub_processes, server_configs=server_configs)
+
+    async with session_group:
+        for params in server_params:
+            await session_group.connect_to_server(params)
+        print("Orchestrator: All sub-servers connected and ready.")
+
+        # FIX #1: Yield a dictionary containing our AppContext.
+        # The low-level server will provide this dictionary as the lifespan_context.
+        yield {"app": app_context}
+
+    # This code runs on server shutdown
+    print("Orchestrator: Shutting down sub-servers...")
+    for name, proc in sub_processes.items():
+        print(f"Orchestrator: Terminating '{name}' (PID: {proc.pid})...")
+        proc.terminate()
+        try:
+            proc.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+    print("Orchestrator: Shutdown complete.")
+
+mcp.settings.lifespan = app_lifespan
+
+# --- Orchestrator Tools ---
+
+@mcp.tool()
+def discover_mcp_servers(ctx: Context) -> List[ServerInfo]:
+    """Lists all configured and running MCP sub-servers managed by this orchestrator."""
+    # FIX #2: Access our AppContext from the dictionary provided by the lifespan.
+    app_context: AppContext = ctx.request_context.lifespan_context["app"]
+    return [
+        ServerInfo(
+            name=name,
+            pid=proc.pid if (proc := app_context.sub_processes.get(name)) else None,
+            command=[config.get("command", "")] + config.get("args", [])
+        ) for name, config in app_context.server_configs.items()
+    ]
+
+@mcp.tool()
+def find_mcp_tools(server_name: str, ctx: Context) -> List[ToolInfo]:
+    """Finds all available tools for a specific managed MCP server."""
+    # FIX #3: Access our AppContext from the dictionary provided by the lifespan.
+    app_context: AppContext = ctx.request_context.lifespan_context["app"]
+    session_group = app_context.session_group
+
+    # We filter based on the unique name created by the component hook
+    # But return the simple tool name to the user.
+    prefix = f"{server_name.replace('_', '').title()}::"
+    found_tools = []
+    for qualified_name, tool in session_group.tools.items():
+        if qualified_name.startswith(prefix):
+            found_tools.append(ToolInfo(
+                name=tool.name,
+                description=tool.description,
+                input_schema=tool.inputSchema
+            ))
+
+    if not found_tools:
+        raise ValueError(f"No server found with name '{server_name}' or it has no tools.")
+
+    return found_tools
+
+@mcp.tool()
+async def use_mcp_tool(tool_call: UseToolInput, ctx: Context) -> Any:
+    """Acts as a proxy to call a tool on a specified MCP sub-server."""
+    # FIX #4: Access our AppContext from the dictionary provided by the lifespan.
+    app_context: AppContext = ctx.request_context.lifespan_context["app"]
+    session_group = app_context.session_group
+
+    # Build fully-qualified tool name and proxy via session_group
+    server_class_name = tool_call.server_name.replace('_', '').title()
+    qualified_tool_name = f"{server_class_name}::{tool_call.tool_name}"
+
+    if qualified_tool_name not in session_group.tools:
+        raise ValueError(f"Tool '{tool_call.tool_name}' not found on server '{tool_call.server_name}'.")
+
+    await ctx.info(f"Proxying call to '{qualified_tool_name}' with args: {tool_call.arguments}")
+
+    result = await session_group.call_tool(
+        name=qualified_tool_name,
+        args=tool_call.arguments,
+    )
+
+    return result.structuredContent
+
+
+================================================
+File: .python-version
+================================================
+3.11
+
+
+
+================================================
+File: sub_servers/__init__.py
+================================================
+ 
+
+
+================================================
+File: sub_servers/adder_server.py
+================================================
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP(name="AdderServer")
+
+
+@mcp.tool()
+def add(a: int, b: int) -> int:
+    """Adds two integers and returns the sum."""
+    return a + b
+
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
+
+
+================================================
+File: sub_servers/random_server.py
+================================================
+import random
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP(name="RandomServer")
+
+
+@mcp.tool()
+def generate_random(minimum: int = 0, maximum: int = 100) -> int:
+    """Generates a random integer within a specified range."""
+    return random.randint(minimum, maximum)
+
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio") 
+
+
+================================================
+File: sub_servers/sqlite_server.py
+================================================
+import sqlite3
+import json
+from mcp.server.fastmcp import FastMCP
+
+# --- Database Setup ---
+DB_NAME = ":memory:"  # Use an in-memory database for this demo
+
+
+def setup_database():
+    """Creates and populates the SQLite database."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS players")
+    cursor.execute(
+        """
+        CREATE TABLE players (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            points REAL NOT NULL
+        )
+        """
+    )
+    players_data = [
+        ("LeBron James", 27.1),
+        ("Michael Jordan", 30.1),
+        ("Kobe Bryant", 25.0),
+        ("Stephen Curry", 24.3),
+        ("Kevin Durant", 27.0),
+    ]
+    cursor.executemany("INSERT INTO players (name, points) VALUES (?, ?)", players_data)
+    conn.commit()
+    conn.close()
+
+
+# --- MCP Server ---
+mcp = FastMCP(name="SQLiteServer")
+
+
+@mcp.tool()
+def query_nba_stats(sql_query: str) -> str:
+    """
+    Executes a SQL query against the NBA players database and returns the result as JSON.
+    The table is named 'players' with columns 'name' (TEXT) and 'points' (REAL).
+    Example query: 'SELECT * FROM players WHERE points > 25;'
+    """
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row  # Allows accessing columns by name
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql_query)
+        rows = cursor.fetchall()
+        # Convert rows to a list of dictionaries
+        result = [dict(row) for row in rows]
+        return json.dumps(result, indent=2)
+    except sqlite3.Error as e:
+        return json.dumps({"error": str(e)})
+    finally:
+        conn.close()
+
+
+if __name__ == "__main__":
+    setup_database()
+    mcp.run(transport="stdio") 
+

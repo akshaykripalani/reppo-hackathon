@@ -1,0 +1,268 @@
+2025-07-06T22:54:28.606Z [info] [filesystem] Shutting down server...
+2025-07-06T22:54:28.606Z [info] [filesystem] Client transport closed
+2025-07-06T22:54:28.606Z [info] [filesystem] Server transport closed
+2025-07-06T22:54:28.606Z [info] [filesystem] Client transport closed
+2025-07-06T22:54:28.606Z [info] [filesystem] Server transport closed (intentional shutdown)
+2025-07-06T22:54:28.606Z [info] [filesystem] Client transport closed
+2025-07-06T22:54:28.607Z [info] [github-issues] Shutting down server...
+2025-07-06T22:54:28.607Z [info] [github-issues] Client transport closed
+2025-07-06T22:54:28.607Z [info] [github-issues] Server transport closed
+2025-07-06T22:54:28.607Z [info] [github-issues] Client transport closed
+2025-07-06T22:54:28.607Z [info] [github-issues] Server transport closed (intentional shutdown)
+2025-07-06T22:54:28.607Z [info] [github-issues] Client transport closed
+2025-07-06T22:54:28.607Z [info] [giga-mcp] Shutting down server...
+2025-07-06T22:54:28.607Z [info] [giga-mcp] Client transport closed
+2025-07-06T22:54:28.648Z [info] [filesystem] Server transport closed
+2025-07-06T22:54:28.648Z [info] [filesystem] Client transport closed
+2025-07-06T22:57:32.794Z [info] [filesystem] Initializing server...
+2025-07-06T22:57:32.795Z [info] [github-issues] Initializing server...
+2025-07-06T22:57:32.796Z [info] [giga-mcp] Initializing server...
+2025-07-06T22:57:32.813Z [info] [github-issues] Using MCP server command: C:\Users\aksha\.local\bin\uv.exe with args and path: {
+  args: [
+    '--directory',
+    'C:\\Akshay\\Projects\\github-mcp',
+    'run',
+    'main.py',
+    [length]: 4
+  ],
+  paths: [
+    'C:\\Program Files\\nodejs',
+    'C:\\Program Files\\ImageMagick-7.1.1-Q16-HDRI',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\libnvvp',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\bin',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\libnvvp',
+    'C:\\Program Files\\Common Files\\Oracle\\Java\\javapath',
+    'C:\\Windows\\system32',
+    'C:\\Windows',
+    'C:\\Windows\\System32\\Wbem',
+    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\',
+    'C:\\Windows\\System32\\OpenSSH\\',
+    'C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common',
+    'C:\\Program Files\\Git\\cmd',
+    'c:\\Users\\aksha\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin',
+    'C:\\Program Files (x86)\\cloudflared\\',
+    'C:\\Program Files\\Docker\\Docker\\resources\\bin',
+    'C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2022.3.0\\',
+    'C:\\WINDOWS\\system32',
+    'C:\\WINDOWS',
+    'C:\\WINDOWS\\System32\\Wbem',
+    'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\',
+    'C:\\WINDOWS\\System32\\OpenSSH\\',
+    'C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2024.3.0\\',
+    'C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR',
+    'C:\\Program Files\\nodejs\\',
+    'C:\\Program Files\\Cloudflare\\Cloudflare WARP\\',
+    'C:\\Program Files\\Go\\bin',
+    'C:\\Program Files\\Tailscale\\',
+    'C:\\Users\\aksha\\.cargo\\bin',
+    'C:\\Users\\aksha\\.local\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\oh-my-posh\\bin\\',
+    'C:\\Users\\aksha\\.pyenv\\pyenv-win\\bin',
+    'C:\\Users\\aksha\\.pyenv\\pyenv-win\\shims',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WindowsApps',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\Microsoft VS Code\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\GitHubDesktop\\bin',
+    'C:\\mingw64\\bin',
+    'C:\\Scripts',
+    'C:\\Program Files\\cursor-id-modifier',
+    'C:\\Users\\aksha\\Downloads\\Render CLI',
+    'C:\\Program Files\\ffmpeg\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WindowsApps',
+    'C:\\Users\\aksha\\AppData\\Roaming\\npm',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Fastfetch-cli.Fastfetch_Microsoft.Winget.Source_8wekyb3d8bbwe',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WinGet\\Packages\\GNU.Nano_Microsoft.Winget.Source_8wekyb3d8bbwe',
+    'C:\\Scripts\\gifsicle',
+    '',
+    'C:\\Users\\aksha\\.bun\\bin',
+    'C:\\Users\\aksha\\go\\bin',
+    [length]: 52
+  ]
+}
+2025-07-06T22:57:32.818Z [info] [github-issues] Server started and connected successfully
+2025-07-06T22:57:32.823Z [info] [filesystem] Using MCP server command: C:\WINDOWS\System32\cmd.exe with args and path: {
+  args: [
+    '/C',
+    'C:\\Program Files\\nodejs\\npx.cmd',
+    '-y',
+    '@modelcontextprotocol/server-filesystem',
+    'C:\\Users\\aksha\\Desktop',
+    'C:\\Users\\aksha\\Downloads',
+    [length]: 6
+  ],
+  paths: [
+    'C:\\Program Files\\nodejs',
+    'C:\\Program Files\\ImageMagick-7.1.1-Q16-HDRI',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\libnvvp',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\bin',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\libnvvp',
+    'C:\\Program Files\\Common Files\\Oracle\\Java\\javapath',
+    'C:\\Windows\\system32',
+    'C:\\Windows',
+    'C:\\Windows\\System32\\Wbem',
+    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\',
+    'C:\\Windows\\System32\\OpenSSH\\',
+    'C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common',
+    'C:\\Program Files\\Git\\cmd',
+    'c:\\Users\\aksha\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin',
+    'C:\\Program Files (x86)\\cloudflared\\',
+    'C:\\Program Files\\Docker\\Docker\\resources\\bin',
+    'C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2022.3.0\\',
+    'C:\\WINDOWS\\system32',
+    'C:\\WINDOWS',
+    'C:\\WINDOWS\\System32\\Wbem',
+    'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\',
+    'C:\\WINDOWS\\System32\\OpenSSH\\',
+    'C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2024.3.0\\',
+    'C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR',
+    'C:\\Program Files\\nodejs\\',
+    'C:\\Program Files\\Cloudflare\\Cloudflare WARP\\',
+    'C:\\Program Files\\Go\\bin',
+    'C:\\Program Files\\Tailscale\\',
+    'C:\\Users\\aksha\\.cargo\\bin',
+    'C:\\Users\\aksha\\.local\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\oh-my-posh\\bin\\',
+    'C:\\Users\\aksha\\.pyenv\\pyenv-win\\bin',
+    'C:\\Users\\aksha\\.pyenv\\pyenv-win\\shims',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WindowsApps',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\Microsoft VS Code\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\GitHubDesktop\\bin',
+    'C:\\mingw64\\bin',
+    'C:\\Scripts',
+    'C:\\Program Files\\cursor-id-modifier',
+    'C:\\Users\\aksha\\Downloads\\Render CLI',
+    'C:\\Program Files\\ffmpeg\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WindowsApps',
+    'C:\\Users\\aksha\\AppData\\Roaming\\npm',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Fastfetch-cli.Fastfetch_Microsoft.Winget.Source_8wekyb3d8bbwe',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WinGet\\Packages\\GNU.Nano_Microsoft.Winget.Source_8wekyb3d8bbwe',
+    'C:\\Scripts\\gifsicle',
+    '',
+    'C:\\Users\\aksha\\.bun\\bin',
+    'C:\\Users\\aksha\\go\\bin',
+    [length]: 52
+  ]
+}
+2025-07-06T22:57:32.829Z [info] [filesystem] Server started and connected successfully
+2025-07-06T22:57:32.831Z [info] [giga-mcp] Using MCP server command: C:\Users\aksha\.local\bin\uv.exe with args and path: {
+  args: [
+    '--directory',
+    'C:\\Akshay\\Projects\\solver-node',
+    'run',
+    'local.py',
+    [length]: 4
+  ],
+  paths: [
+    'C:\\Program Files\\nodejs',
+    'C:\\Program Files\\ImageMagick-7.1.1-Q16-HDRI',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\libnvvp',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\bin',
+    'C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\libnvvp',
+    'C:\\Program Files\\Common Files\\Oracle\\Java\\javapath',
+    'C:\\Windows\\system32',
+    'C:\\Windows',
+    'C:\\Windows\\System32\\Wbem',
+    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\',
+    'C:\\Windows\\System32\\OpenSSH\\',
+    'C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common',
+    'C:\\Program Files\\Git\\cmd',
+    'c:\\Users\\aksha\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin',
+    'C:\\Program Files (x86)\\cloudflared\\',
+    'C:\\Program Files\\Docker\\Docker\\resources\\bin',
+    'C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2022.3.0\\',
+    'C:\\WINDOWS\\system32',
+    'C:\\WINDOWS',
+    'C:\\WINDOWS\\System32\\Wbem',
+    'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\',
+    'C:\\WINDOWS\\System32\\OpenSSH\\',
+    'C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2024.3.0\\',
+    'C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR',
+    'C:\\Program Files\\nodejs\\',
+    'C:\\Program Files\\Cloudflare\\Cloudflare WARP\\',
+    'C:\\Program Files\\Go\\bin',
+    'C:\\Program Files\\Tailscale\\',
+    'C:\\Users\\aksha\\.cargo\\bin',
+    'C:\\Users\\aksha\\.local\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\oh-my-posh\\bin\\',
+    'C:\\Users\\aksha\\.pyenv\\pyenv-win\\bin',
+    'C:\\Users\\aksha\\.pyenv\\pyenv-win\\shims',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WindowsApps',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\Microsoft VS Code\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\GitHubDesktop\\bin',
+    'C:\\mingw64\\bin',
+    'C:\\Scripts',
+    'C:\\Program Files\\cursor-id-modifier',
+    'C:\\Users\\aksha\\Downloads\\Render CLI',
+    'C:\\Program Files\\ffmpeg\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WindowsApps',
+    'C:\\Users\\aksha\\AppData\\Roaming\\npm',
+    'C:\\Users\\aksha\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Fastfetch-cli.Fastfetch_Microsoft.Winget.Source_8wekyb3d8bbwe',
+    'C:\\Users\\aksha\\AppData\\Local\\Microsoft\\WinGet\\Packages\\GNU.Nano_Microsoft.Winget.Source_8wekyb3d8bbwe',
+    'C:\\Scripts\\gifsicle',
+    '',
+    'C:\\Users\\aksha\\.bun\\bin',
+    'C:\\Users\\aksha\\go\\bin',
+    [length]: 52
+  ]
+}
+2025-07-06T22:57:32.836Z [info] [giga-mcp] Server started and connected successfully
+2025-07-06T22:57:32.837Z [info] [github-issues] Message from client: {"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"claude-ai","version":"0.1.0"}},"jsonrpc":"2.0","id":0}
+2025-07-06T22:57:32.838Z [info] [filesystem] Message from client: {"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"claude-ai","version":"0.1.0"}},"jsonrpc":"2.0","id":0}
+2025-07-06T22:57:32.839Z [info] [giga-mcp] Message from client: {"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"claude-ai","version":"0.1.0"}},"jsonrpc":"2.0","id":0}
+2025-07-06T22:57:33.898Z [info] [giga-mcp] Server transport closed
+2025-07-06T22:57:33.898Z [info] [giga-mcp] Client transport closed
+2025-07-06T22:57:33.899Z [info] [giga-mcp] Server transport closed unexpectedly, this is likely due to the process exiting early. If you are developing this MCP server you can add output to stderr (i.e. `console.error('...')` in JavaScript, `print('...', file=sys.stderr)` in python) and it will appear in this log.
+2025-07-06T22:57:33.899Z [error] [giga-mcp] Server disconnected. For troubleshooting guidance, please visit our [debugging documentation](https://modelcontextprotocol.io/docs/tools/debugging)
+2025-07-06T22:57:33.899Z [info] [giga-mcp] Client transport closed
+2025-07-06T22:57:34.094Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{"experimental":{},"prompts":{"listChanged":false},"resources":{"subscribe":false,"listChanged":false},"tools":{"listChanged":false}},"serverInfo":{"name":"github-issues","version":"1.6.0"}}}
+2025-07-06T22:57:34.095Z [info] [github-issues] Message from client: {"method":"notifications/initialized","jsonrpc":"2.0"}
+2025-07-06T22:57:34.097Z [info] [github-issues] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":1}
+2025-07-06T22:57:34.097Z [info] [github-issues] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":2}
+2025-07-06T22:57:34.098Z [info] [github-issues] Message from client: {"method":"resources/list","params":{},"jsonrpc":"2.0","id":3}
+2025-07-06T22:57:34.106Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"find_issues","description":"\n    Searches GitHub for open issues labeled 'good first issue'\n    related to the provided topic.\n    \n    This tool is specifically designed to help newcomers to open source\n    find beginner-friendly issues to work on. It identifies issues that\n    project maintainers have explicitly marked as suitable for first-time\n    contributors, making it easier for newbies to find good first problems\n    to solve and start their open source journey.\n    \n    Args:\n        request: An IssueRequest object containing the topic to search for.\n        \n    Returns:\n        A list of IssueInfo objects containing details about matching issues.\n        \n    Raises:\n        HTTPException: If the GitHub token is missing, the topic is empty,\n                      or there's an error communicating with the GitHub API.\n    ","inputSchema":{"$defs":{"IssueRequest":{"description":"Request model for GitHub issue search.\n\nAttributes:\n    topic: The topic or technology to search for issues in.","properties":{"topic":{"title":"Topic","type":"string"}},"required":["topic"],"title":"IssueRequest","type":"object"}},"properties":{"request":{"$ref":"#/$defs/IssueRequest"}},"required":["request"],"title":"find_issuesArguments","type":"object"}}]}}
+2025-07-06T22:57:34.107Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"find_issues","description":"\n    Searches GitHub for open issues labeled 'good first issue'\n    related to the provided topic.\n    \n    This tool is specifically designed to help newcomers to open source\n    find beginner-friendly issues to work on. It identifies issues that\n    project maintainers have explicitly marked as suitable for first-time\n    contributors, making it easier for newbies to find good first problems\n    to solve and start their open source journey.\n    \n    Args:\n        request: An IssueRequest object containing the topic to search for.\n        \n    Returns:\n        A list of IssueInfo objects containing details about matching issues.\n        \n    Raises:\n        HTTPException: If the GitHub token is missing, the topic is empty,\n                      or there's an error communicating with the GitHub API.\n    ","inputSchema":{"$defs":{"IssueRequest":{"description":"Request model for GitHub issue search.\n\nAttributes:\n    topic: The topic or technology to search for issues in.","properties":{"topic":{"title":"Topic","type":"string"}},"required":["topic"],"title":"IssueRequest","type":"object"}},"properties":{"request":{"$ref":"#/$defs/IssueRequest"}},"required":["request"],"title":"find_issuesArguments","type":"object"}}]}}
+2025-07-06T22:57:34.108Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":3,"result":{"resources":[]}}
+2025-07-06T22:57:34.122Z [info] [github-issues] Message from client: {"method":"prompts/list","params":{},"jsonrpc":"2.0","id":4}
+2025-07-06T22:57:34.125Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":4,"result":{"prompts":[]}}
+2025-07-06T22:57:34.287Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{"tools":{}},"serverInfo":{"name":"secure-filesystem-server","version":"0.2.0"}}}
+2025-07-06T22:57:34.288Z [info] [filesystem] Message from client: {"method":"notifications/initialized","jsonrpc":"2.0"}
+2025-07-06T22:57:34.289Z [info] [github-issues] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":5}
+2025-07-06T22:57:34.289Z [info] [filesystem] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":1}
+2025-07-06T22:57:34.290Z [info] [github-issues] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":6}
+2025-07-06T22:57:34.290Z [info] [github-issues] Message from client: {"method":"resources/list","params":{},"jsonrpc":"2.0","id":7}
+2025-07-06T22:57:34.290Z [info] [filesystem] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":2}
+2025-07-06T22:57:34.290Z [info] [filesystem] Message from client: {"method":"resources/list","params":{},"jsonrpc":"2.0","id":3}
+2025-07-06T22:57:34.294Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"read_file","description":"Read the complete contents of a file from the file system. Handles various text encodings and provides detailed error messages if the file cannot be read. Use this tool when you need to examine the contents of a single file. Use the 'head' parameter to read only the first N lines of a file, or the 'tail' parameter to read only the last N lines of a file. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"tail":{"type":"number","description":"If provided, returns only the last N lines of the file"},"head":{"type":"number","description":"If provided, returns only the first N lines of the file"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"read_multiple_files","description":"Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"paths":{"type":"array","items":{"type":"string"}}},"required":["paths"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"write_file","description":"Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"content":{"type":"string"}},"required":["path","content"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"edit_file","description":"Make line-based edits to a text file. Each edit replaces exact line sequences with new content. Returns a git-style diff showing the changes made. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"edits":{"type":"array","items":{"type":"object","properties":{"oldText":{"type":"string","description":"Text to search for - must match exactly"},"newText":{"type":"string","description":"Text to replace with"}},"required":["oldText","newText"],"additionalProperties":false}},"dryRun":{"type":"boolean","default":false,"description":"Preview changes using git-style diff format"}},"required":["path","edits"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"create_directory","description":"Create a new directory or ensure a directory exists. Can create multiple nested directories in one operation. If the directory already exists, this operation will succeed silently. Perfect for setting up directory structures for projects or ensuring required paths exist. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_directory","description":"Get a detailed listing of all files and directories in a specified path. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is essential for understanding directory structure and finding specific files within a directory. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_directory_with_sizes","description":"Get a detailed listing of all files and directories in a specified path, including sizes. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is useful for understanding directory structure and finding specific files within a directory. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"sortBy":{"type":"string","enum":["name","size"],"default":"name","description":"Sort entries by name or size"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"directory_tree","description":"Get a recursive tree view of files and directories as a JSON structure. Each entry includes 'name', 'type' (file/directory), and 'children' for directories. Files have no children array, while directories always have a children array (which may be empty). The output is formatted with 2-space indentation for readability. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"move_file","description":"Move or rename files and directories. Can move files between directories and rename them in a single operation. If the destination exists, the operation will fail. Works across different directories and can be used for simple renaming within the same directory. Both source and destination must be within allowed directories.","inputSchema":{"type":"object","properties":{"source":{"type":"string"},"destination":{"type":"string"}},"required":["source","destination"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"search_files","description":"Recursively search for files and directories matching a pattern. Searches through all subdirectories from the starting path. The search is case-insensitive and matches partial names. Returns full paths to all matching items. Great for finding files when you don't know their exact location. Only searches within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"pattern":{"type":"string"},"excludePatterns":{"type":"array","items":{"type":"string"},"default":[]}},"required":["path","pattern"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"get_file_info","description":"Retrieve detailed metadata about a file or directory. Returns comprehensive information including size, creation time, last modified time, permissions, and type. This tool is perfect for understanding file characteristics without reading the actual content. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_allowed_directories","description":"Returns the list of directories that this server is allowed to access. Use this to understand which directories are available before trying to access files.","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
+2025-07-06T22:57:34.295Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":3,"error":{"code":-32601,"message":"Method not found"}}
+2025-07-06T22:57:34.295Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"read_file","description":"Read the complete contents of a file from the file system. Handles various text encodings and provides detailed error messages if the file cannot be read. Use this tool when you need to examine the contents of a single file. Use the 'head' parameter to read only the first N lines of a file, or the 'tail' parameter to read only the last N lines of a file. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"tail":{"type":"number","description":"If provided, returns only the last N lines of the file"},"head":{"type":"number","description":"If provided, returns only the first N lines of the file"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"read_multiple_files","description":"Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"paths":{"type":"array","items":{"type":"string"}}},"required":["paths"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"write_file","description":"Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"content":{"type":"string"}},"required":["path","content"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"edit_file","description":"Make line-based edits to a text file. Each edit replaces exact line sequences with new content. Returns a git-style diff showing the changes made. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"edits":{"type":"array","items":{"type":"object","properties":{"oldText":{"type":"string","description":"Text to search for - must match exactly"},"newText":{"type":"string","description":"Text to replace with"}},"required":["oldText","newText"],"additionalProperties":false}},"dryRun":{"type":"boolean","default":false,"description":"Preview changes using git-style diff format"}},"required":["path","edits"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"create_directory","description":"Create a new directory or ensure a directory exists. Can create multiple nested directories in one operation. If the directory already exists, this operation will succeed silently. Perfect for setting up directory structures for projects or ensuring required paths exist. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_directory","description":"Get a detailed listing of all files and directories in a specified path. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is essential for understanding directory structure and finding specific files within a directory. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_directory_with_sizes","description":"Get a detailed listing of all files and directories in a specified path, including sizes. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is useful for understanding directory structure and finding specific files within a directory. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"sortBy":{"type":"string","enum":["name","size"],"default":"name","description":"Sort entries by name or size"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"directory_tree","description":"Get a recursive tree view of files and directories as a JSON structure. Each entry includes 'name', 'type' (file/directory), and 'children' for directories. Files have no children array, while directories always have a children array (which may be empty). The output is formatted with 2-space indentation for readability. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"move_file","description":"Move or rename files and directories. Can move files between directories and rename them in a single operation. If the destination exists, the operation will fail. Works across different directories and can be used for simple renaming within the same directory. Both source and destination must be within allowed directories.","inputSchema":{"type":"object","properties":{"source":{"type":"string"},"destination":{"type":"string"}},"required":["source","destination"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"search_files","description":"Recursively search for files and directories matching a pattern. Searches through all subdirectories from the starting path. The search is case-insensitive and matches partial names. Returns full paths to all matching items. Great for finding files when you don't know their exact location. Only searches within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"pattern":{"type":"string"},"excludePatterns":{"type":"array","items":{"type":"string"},"default":[]}},"required":["path","pattern"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"get_file_info","description":"Retrieve detailed metadata about a file or directory. Returns comprehensive information including size, creation time, last modified time, permissions, and type. This tool is perfect for understanding file characteristics without reading the actual content. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_allowed_directories","description":"Returns the list of directories that this server is allowed to access. Use this to understand which directories are available before trying to access files.","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
+2025-07-06T22:57:34.296Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":5,"result":{"tools":[{"name":"find_issues","description":"\n    Searches GitHub for open issues labeled 'good first issue'\n    related to the provided topic.\n    \n    This tool is specifically designed to help newcomers to open source\n    find beginner-friendly issues to work on. It identifies issues that\n    project maintainers have explicitly marked as suitable for first-time\n    contributors, making it easier for newbies to find good first problems\n    to solve and start their open source journey.\n    \n    Args:\n        request: An IssueRequest object containing the topic to search for.\n        \n    Returns:\n        A list of IssueInfo objects containing details about matching issues.\n        \n    Raises:\n        HTTPException: If the GitHub token is missing, the topic is empty,\n                      or there's an error communicating with the GitHub API.\n    ","inputSchema":{"$defs":{"IssueRequest":{"description":"Request model for GitHub issue search.\n\nAttributes:\n    topic: The topic or technology to search for issues in.","properties":{"topic":{"title":"Topic","type":"string"}},"required":["topic"],"title":"IssueRequest","type":"object"}},"properties":{"request":{"$ref":"#/$defs/IssueRequest"}},"required":["request"],"title":"find_issuesArguments","type":"object"}}]}}
+2025-07-06T22:57:34.297Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":6,"result":{"tools":[{"name":"find_issues","description":"\n    Searches GitHub for open issues labeled 'good first issue'\n    related to the provided topic.\n    \n    This tool is specifically designed to help newcomers to open source\n    find beginner-friendly issues to work on. It identifies issues that\n    project maintainers have explicitly marked as suitable for first-time\n    contributors, making it easier for newbies to find good first problems\n    to solve and start their open source journey.\n    \n    Args:\n        request: An IssueRequest object containing the topic to search for.\n        \n    Returns:\n        A list of IssueInfo objects containing details about matching issues.\n        \n    Raises:\n        HTTPException: If the GitHub token is missing, the topic is empty,\n                      or there's an error communicating with the GitHub API.\n    ","inputSchema":{"$defs":{"IssueRequest":{"description":"Request model for GitHub issue search.\n\nAttributes:\n    topic: The topic or technology to search for issues in.","properties":{"topic":{"title":"Topic","type":"string"}},"required":["topic"],"title":"IssueRequest","type":"object"}},"properties":{"request":{"$ref":"#/$defs/IssueRequest"}},"required":["request"],"title":"find_issuesArguments","type":"object"}}]}}
+2025-07-06T22:57:34.298Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":7,"result":{"resources":[]}}
+2025-07-06T22:57:34.302Z [info] [github-issues] Message from client: {"method":"prompts/list","params":{},"jsonrpc":"2.0","id":8}
+2025-07-06T22:57:34.302Z [info] [filesystem] Message from client: {"method":"prompts/list","params":{},"jsonrpc":"2.0","id":4}
+2025-07-06T22:57:34.303Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":4,"error":{"code":-32601,"message":"Method not found"}}
+2025-07-06T22:57:34.306Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":8,"result":{"prompts":[]}}
+2025-07-06T22:57:35.060Z [info] [github-issues] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":9}
+2025-07-06T22:57:35.060Z [info] [filesystem] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":5}
+2025-07-06T22:57:35.060Z [info] [github-issues] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":10}
+2025-07-06T22:57:35.061Z [info] [github-issues] Message from client: {"method":"resources/list","params":{},"jsonrpc":"2.0","id":11}
+2025-07-06T22:57:35.061Z [info] [filesystem] Message from client: {"method":"tools/list","params":{},"jsonrpc":"2.0","id":6}
+2025-07-06T22:57:35.061Z [info] [filesystem] Message from client: {"method":"resources/list","params":{},"jsonrpc":"2.0","id":7}
+2025-07-06T22:57:35.062Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":5,"result":{"tools":[{"name":"read_file","description":"Read the complete contents of a file from the file system. Handles various text encodings and provides detailed error messages if the file cannot be read. Use this tool when you need to examine the contents of a single file. Use the 'head' parameter to read only the first N lines of a file, or the 'tail' parameter to read only the last N lines of a file. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"tail":{"type":"number","description":"If provided, returns only the last N lines of the file"},"head":{"type":"number","description":"If provided, returns only the first N lines of the file"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"read_multiple_files","description":"Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"paths":{"type":"array","items":{"type":"string"}}},"required":["paths"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"write_file","description":"Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"content":{"type":"string"}},"required":["path","content"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"edit_file","description":"Make line-based edits to a text file. Each edit replaces exact line sequences with new content. Returns a git-style diff showing the changes made. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"edits":{"type":"array","items":{"type":"object","properties":{"oldText":{"type":"string","description":"Text to search for - must match exactly"},"newText":{"type":"string","description":"Text to replace with"}},"required":["oldText","newText"],"additionalProperties":false}},"dryRun":{"type":"boolean","default":false,"description":"Preview changes using git-style diff format"}},"required":["path","edits"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"create_directory","description":"Create a new directory or ensure a directory exists. Can create multiple nested directories in one operation. If the directory already exists, this operation will succeed silently. Perfect for setting up directory structures for projects or ensuring required paths exist. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_directory","description":"Get a detailed listing of all files and directories in a specified path. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is essential for understanding directory structure and finding specific files within a directory. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_directory_with_sizes","description":"Get a detailed listing of all files and directories in a specified path, including sizes. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is useful for understanding directory structure and finding specific files within a directory. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"sortBy":{"type":"string","enum":["name","size"],"default":"name","description":"Sort entries by name or size"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"directory_tree","description":"Get a recursive tree view of files and directories as a JSON structure. Each entry includes 'name', 'type' (file/directory), and 'children' for directories. Files have no children array, while directories always have a children array (which may be empty). The output is formatted with 2-space indentation for readability. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"move_file","description":"Move or rename files and directories. Can move files between directories and rename them in a single operation. If the destination exists, the operation will fail. Works across different directories and can be used for simple renaming within the same directory. Both source and destination must be within allowed directories.","inputSchema":{"type":"object","properties":{"source":{"type":"string"},"destination":{"type":"string"}},"required":["source","destination"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"search_files","description":"Recursively search for files and directories matching a pattern. Searches through all subdirectories from the starting path. The search is case-insensitive and matches partial names. Returns full paths to all matching items. Great for finding files when you don't know their exact location. Only searches within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"pattern":{"type":"string"},"excludePatterns":{"type":"array","items":{"type":"string"},"default":[]}},"required":["path","pattern"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"get_file_info","description":"Retrieve detailed metadata about a file or directory. Returns comprehensive information including size, creation time, last modified time, permissions, and type. This tool is perfect for understanding file characteristics without reading the actual content. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_allowed_directories","description":"Returns the list of directories that this server is allowed to access. Use this to understand which directories are available before trying to access files.","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
+2025-07-06T22:57:35.063Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":7,"error":{"code":-32601,"message":"Method not found"}}
+2025-07-06T22:57:35.064Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":6,"result":{"tools":[{"name":"read_file","description":"Read the complete contents of a file from the file system. Handles various text encodings and provides detailed error messages if the file cannot be read. Use this tool when you need to examine the contents of a single file. Use the 'head' parameter to read only the first N lines of a file, or the 'tail' parameter to read only the last N lines of a file. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"tail":{"type":"number","description":"If provided, returns only the last N lines of the file"},"head":{"type":"number","description":"If provided, returns only the first N lines of the file"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"read_multiple_files","description":"Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"paths":{"type":"array","items":{"type":"string"}}},"required":["paths"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"write_file","description":"Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"content":{"type":"string"}},"required":["path","content"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"edit_file","description":"Make line-based edits to a text file. Each edit replaces exact line sequences with new content. Returns a git-style diff showing the changes made. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"edits":{"type":"array","items":{"type":"object","properties":{"oldText":{"type":"string","description":"Text to search for - must match exactly"},"newText":{"type":"string","description":"Text to replace with"}},"required":["oldText","newText"],"additionalProperties":false}},"dryRun":{"type":"boolean","default":false,"description":"Preview changes using git-style diff format"}},"required":["path","edits"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"create_directory","description":"Create a new directory or ensure a directory exists. Can create multiple nested directories in one operation. If the directory already exists, this operation will succeed silently. Perfect for setting up directory structures for projects or ensuring required paths exist. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_directory","description":"Get a detailed listing of all files and directories in a specified path. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is essential for understanding directory structure and finding specific files within a directory. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_directory_with_sizes","description":"Get a detailed listing of all files and directories in a specified path, including sizes. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is useful for understanding directory structure and finding specific files within a directory. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"sortBy":{"type":"string","enum":["name","size"],"default":"name","description":"Sort entries by name or size"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"directory_tree","description":"Get a recursive tree view of files and directories as a JSON structure. Each entry includes 'name', 'type' (file/directory), and 'children' for directories. Files have no children array, while directories always have a children array (which may be empty). The output is formatted with 2-space indentation for readability. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"move_file","description":"Move or rename files and directories. Can move files between directories and rename them in a single operation. If the destination exists, the operation will fail. Works across different directories and can be used for simple renaming within the same directory. Both source and destination must be within allowed directories.","inputSchema":{"type":"object","properties":{"source":{"type":"string"},"destination":{"type":"string"}},"required":["source","destination"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"search_files","description":"Recursively search for files and directories matching a pattern. Searches through all subdirectories from the starting path. The search is case-insensitive and matches partial names. Returns full paths to all matching items. Great for finding files when you don't know their exact location. Only searches within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"},"pattern":{"type":"string"},"excludePatterns":{"type":"array","items":{"type":"string"},"default":[]}},"required":["path","pattern"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"get_file_info","description":"Retrieve detailed metadata about a file or directory. Returns comprehensive information including size, creation time, last modified time, permissions, and type. This tool is perfect for understanding file characteristics without reading the actual content. Only works within allowed directories.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"list_allowed_directories","description":"Returns the list of directories that this server is allowed to access. Use this to understand which directories are available before trying to access files.","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
+2025-07-06T22:57:35.067Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":9,"result":{"tools":[{"name":"find_issues","description":"\n    Searches GitHub for open issues labeled 'good first issue'\n    related to the provided topic.\n    \n    This tool is specifically designed to help newcomers to open source\n    find beginner-friendly issues to work on. It identifies issues that\n    project maintainers have explicitly marked as suitable for first-time\n    contributors, making it easier for newbies to find good first problems\n    to solve and start their open source journey.\n    \n    Args:\n        request: An IssueRequest object containing the topic to search for.\n        \n    Returns:\n        A list of IssueInfo objects containing details about matching issues.\n        \n    Raises:\n        HTTPException: If the GitHub token is missing, the topic is empty,\n                      or there's an error communicating with the GitHub API.\n    ","inputSchema":{"$defs":{"IssueRequest":{"description":"Request model for GitHub issue search.\n\nAttributes:\n    topic: The topic or technology to search for issues in.","properties":{"topic":{"title":"Topic","type":"string"}},"required":["topic"],"title":"IssueRequest","type":"object"}},"properties":{"request":{"$ref":"#/$defs/IssueRequest"}},"required":["request"],"title":"find_issuesArguments","type":"object"}}]}}
+2025-07-06T22:57:35.068Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":10,"result":{"tools":[{"name":"find_issues","description":"\n    Searches GitHub for open issues labeled 'good first issue'\n    related to the provided topic.\n    \n    This tool is specifically designed to help newcomers to open source\n    find beginner-friendly issues to work on. It identifies issues that\n    project maintainers have explicitly marked as suitable for first-time\n    contributors, making it easier for newbies to find good first problems\n    to solve and start their open source journey.\n    \n    Args:\n        request: An IssueRequest object containing the topic to search for.\n        \n    Returns:\n        A list of IssueInfo objects containing details about matching issues.\n        \n    Raises:\n        HTTPException: If the GitHub token is missing, the topic is empty,\n                      or there's an error communicating with the GitHub API.\n    ","inputSchema":{"$defs":{"IssueRequest":{"description":"Request model for GitHub issue search.\n\nAttributes:\n    topic: The topic or technology to search for issues in.","properties":{"topic":{"title":"Topic","type":"string"}},"required":["topic"],"title":"IssueRequest","type":"object"}},"properties":{"request":{"$ref":"#/$defs/IssueRequest"}},"required":["request"],"title":"find_issuesArguments","type":"object"}}]}}
+2025-07-06T22:57:35.068Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":11,"result":{"resources":[]}}
+2025-07-06T22:57:35.201Z [info] [github-issues] Message from client: {"method":"prompts/list","params":{},"jsonrpc":"2.0","id":12}
+2025-07-06T22:57:35.201Z [info] [filesystem] Message from client: {"method":"prompts/list","params":{},"jsonrpc":"2.0","id":8}
+2025-07-06T22:57:35.208Z [info] [github-issues] Message from server: {"jsonrpc":"2.0","id":12,"result":{"prompts":[]}}
+2025-07-06T22:57:35.210Z [info] [filesystem] Message from server: {"jsonrpc":"2.0","id":8,"error":{"code":-32601,"message":"Method not found"}}

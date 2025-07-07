@@ -27,7 +27,7 @@ def start():
     print(BANNER)
     logging.info("Starting Reppo Orchestrator MCP Server on port 8000...")
     try:
-        orchestrator_server.run(transport="sse")
+        orchestrator_server.run(transport="streamable-http")
     except KeyboardInterrupt:
         logging.info("Server stopped by user.")
     except Exception as e:
