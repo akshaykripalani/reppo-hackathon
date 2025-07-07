@@ -1,56 +1,55 @@
-# Giga-MCP Demo: MCP Orchestrator 🧩
+# Giga MCP Demo 🚀
 
-A **self-contained local demonstration** of an _MCP Orchestrator_ that aggregates the capabilities of several small worker MCP servers.  The orchestrator exposes three high-level tools that let any MCP client:
+An **MCP orchestrator** that behaves like an API gateway: it discovers remote sub-servers (other MCPs), lets you inspect their tools, and proxies calls — so your LLM only talks to **one** endpoint.
 
-1. Discover which sub-servers are running  
-2. Inspect the tools each sub-server offers  
-3. Proxy a call to any of those tools — all through a single endpoint
+* discover → find tools → run tool
+* No need to self-host every worker; the orchestrator connects dynamically.
 
+---
+
+## ⚡ Quick Start
+
+You have **two ways to play**:
+
+### A) Just connect to the public Giga-MCP network
+
+```bash
+uv pip install "mcp[cli]>=1.10.1" requests   # or plain pip
+python local.py   # points to the public gateway by default
+```
+
+`local.py` runs over stdio, so drop it straight into Claude Desktop and the LLM instantly gains access to every tool on the network.
+
+### B) Run your **own** mini-network locally
+
+```bash
+uv pip install "mcp[cli]>=1.10.1" requests
+python main.py      # launches orchestrator on http://127.0.0.1:6969/mcp/
+
+# (Optional) connect via the wrapper instead of curl
+ORCHESTRATOR_URL=http://localhost:6969/mcp/ python local.py
+```
+
+That's it! No Docker, no databases to install.
 
 ---
 
 ## Project Structure
 
-```text
+```
 solver-node/
-├── local.py             # THIS IS WHAT THE USER HAS TO USE, EVERYTHING BEYOND IS PURE TECHNICALS
-├── main.py              # Entry point – starts the orchestrator FastMCP server
-├── solver_server.py     # Orchestrator implementation & lifespan manager
-├── manifest.json        # Declares sub-servers to launch (command + args)
-├── pyproject.toml       # Minimal dependencies (only mcp[cli])
-└── sub_servers/
+├── main.py              # starts orchestrator
+├── solver_server.py     # orchestrator impl + lifespan
+├── local.py             # stdio wrapper (gateway for LLMs)
+├── manifest.json        # declares sub-servers
+└── sub_servers/         # example worker MCPs
     ├── __init__.py
-    ├── adder_server.py      # add(a, b)
-    ├── random_server.py     # generate_random(min, max)
-    └── sqlite_server.py     # query_nba_stats(sql_query)
+    ├── adder_server.py
+    ├── nba_players.db
+    ├── random_server.py
+    └── sqlite_server.py
 ```
 
----
-
-## Quick Start
-### Note: The Remote MCPs in this server have already been hosted at https://mcp.akshaykripalani.tech/mcp/
-### Feel free to use those rather than running any of these locally! (except local.py, which you will have to)
-
-### 1. Install dependency
-```bash
-uv add "mcp[cli]"
-uv add requests
-```
-
-### 2. Add to Claude Desktop!
-```
-"giga-mcp": {
-    "type": "mcp",  
-    "command": "/path/to/python.exe",
-    "args": ["/path/to/local.py"]
-}
-```
-
-
-### Should you wish to self host it all yourself
-1. Install dependencies using uv
-2. Run main.py in a separate terminal window
-3. Use claude desktop as normal
 ---
 
 ## How It Works
@@ -121,22 +120,3 @@ uv add requests
     * Perfect for desktop apps (e.g. Claude Desktop) that launch a local process but don't embed HTTP logic
 
 ---
-
-## Extending the Demo
-
-* **Add a new worker**  
-  1. Create `sub_servers/my_server.py` with a FastMCP instance & tool(s)  
-  2. Add an entry to `manifest.json`  
-  3. Restart the orchestrator – no other code changes required.
-
-* **Swap transport**  
-  Change `transport="sse"` in `main.py` to `http` or `websocket` if preferred.
-
-* **Deploy remotely**  
-  Because each worker is launched via `manifest.json`, you could point to remote TCP servers instead of local processes by switching to `HttpServerParameters` / `WebSocketServerParameters`.
-
----
-
-## License
-
-Distributed under the **MIT License**.  See [`LICENSE`](LICENSE) for full text.
