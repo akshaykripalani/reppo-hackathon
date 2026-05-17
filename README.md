@@ -1,3 +1,10 @@
+---
+---
+### This project won the Protocol Labs: Modular Worlds hackathon!
+Demo video: https://youtu.be/B0gXihBZpTE
+---
+---
+
 # Giga MCP Demo 🚀
 
 An **MCP orchestrator** that behaves like an API gateway: it discovers remote sub-servers (other MCPs), lets you inspect their tools, and proxies calls — so your LLM only talks to **one** endpoint.
@@ -5,10 +12,6 @@ An **MCP orchestrator** that behaves like an API gateway: it discovers remote su
 * discover → find tools → run tool
 * No need to self-host every worker; the orchestrator connects dynamically.
 
----
-### This project won the Protocol Labs: Modular Worlds hackathon!
-Demo video: https://youtu.be/B0gXihBZpTE
----
 ## ⚡ Quick Start
 
 You have **two ways to play**:
